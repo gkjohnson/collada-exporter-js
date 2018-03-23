@@ -19,10 +19,35 @@ THREE.ColladaExporter.prototype = {
 
     parse: function ( object ) {
 
+        // Convert the urdf xml into a well-formatted, indented format
+        function format(urdf) {
+            const IS_END_TAG = /^<\//;
+            const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
+            const pad = (ch, num) => (num > 0 ? ch + pad(ch, num - 1) : '');
+            
+            let tagnum = 0;
+            return urdf
+                .match(/<[^>]+>/g)
+                .map(tag => {
+                    if (!IS_SELF_CLOSING.test(tag) && IS_END_TAG.test(tag)) {
+                        tagnum --;
+                    }
+
+                    const res = `${pad('  ', tagnum)}${tag}`;
+
+                    if (!IS_SELF_CLOSING.test(tag) && !IS_END_TAG.test(tag)) {
+                        tagnum ++;
+                    }
+
+                    return res;
+                })
+                .join('\n');        
+        }
+
         var geometryMap = new WeakMap();
 
         object.traverse( function ( child ) { 
-            
+
 
 
         } );
@@ -47,9 +72,9 @@ THREE.ColladaExporter.prototype = {
 
             // include <scene>
 
-            res += '</COLLADA>';
+            res += '</asset></COLLADA>';
 
-        return res;
+        return format(res);
 
     }
 
