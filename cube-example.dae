@@ -49,8 +49,6 @@
  </library_materials>
  <library_geometries>
  <geometry id="box" name="box"> 
-A-2 COLLADA – Digital Asset Schema Release 1.5.0
-April 2008
  <mesh>
  <source id="box-Pos">
  <float_array id="box-Pos-array" count="24">
@@ -111,8 +109,6 @@ April 2008
  <rotate> 0 0 1 0</rotate>
  <rotate> 0 1 0 0</rotate>
  <rotate> 1 0 0 0</rotate> 
- Specification – Appendix A: COLLADA Example A-3
-April 2008
  <scale> 1 1 1</scale>
  <instance_geometry url="#box">
  <bind_material>
