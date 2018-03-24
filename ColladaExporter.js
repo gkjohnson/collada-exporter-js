@@ -89,7 +89,7 @@ THREE.ColladaExporter.prototype = {
             if ( g.indices ) {
 
                 var polycount = g.attributes.position.length / 3;
-                gnode += `<polylist material="mesh-material" count="${ polycount }">`;
+                gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
                 gnode += polylistchildren;
 
                 gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
@@ -98,7 +98,7 @@ THREE.ColladaExporter.prototype = {
             } else {
 
                 var polycount = g.indices.length / 3;
-                gnode += `<polylist material="mesh-material" count="${ polycount }">`;
+                gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
                 gnode += polylistchildren;
 
                 gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
@@ -115,8 +115,43 @@ THREE.ColladaExporter.prototype = {
             // TODO: return an effect for the material
         }
 
-        function processMaterial ( m, matid ) {
+        function processEffect ( m, matid ) {
             // TODO: return the library material
+            
+            var type = 'phong';
+
+            var effectnode = 
+                `<effect id="${ matid }">` +
+                '<profile_COMMON><technique>' +
+
+                `<${ type }>` +
+
+                `<emission><color>${} ${} ${}</color></emission>` +
+
+                `<ambient><color>${} ${} ${}</color></ambient>` +
+                
+                `<diffuse><color>${} ${} ${}</color></diffuse>` +
+
+
+                `<specular><color>${} ${} ${}</color></specular>` +
+
+                `<shininess><float>${}</float></shininess>` +
+
+
+                `<reflective><color>${} ${} ${}</color></reflective>` +
+
+                `<reflectivity><float>${}</float></reflectivity>` +
+
+
+                `<transparent><float>${}</float></transparent>` +
+
+                `<transparency><float>${}</float></transparency>` +
+
+                `</${ type }>` +
+
+                '</technique></profile_COMMON>' +
+                '</effect>';
+
         }
 
         function processTransform ( o ) {
@@ -148,7 +183,7 @@ THREE.ColladaExporter.prototype = {
 
             node += processTransform( o );
 
-            if ( o instanceof THREE.Mesh && o.geometry ) {
+            if ( o instanceof THREE.Mesh && o.geometry != null ) {
 
                 var meshid = geometryMap.get( geometry );
                 if ( meshid == null) {
@@ -159,15 +194,35 @@ THREE.ColladaExporter.prototype = {
 
                 }
 
-                var matid = `Mat${ libraryEffects.length + 1 }`;
-                libraryEffects.push( processMaterial (o.material, matid ) );
-                // TODO: push onto the materials array, too, and add to the material map
+                var matid = null;
+
+                if ( o.material != null ) {
+                
+                    var material = o.material;
+                    matid = materialMap.get( material );
+
+                    if ( matid == null) {
+                        
+                        matid = `Mat${ libraryEffects.length + 1 }`;
+
+                        libraryMaterials.push(`<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>`)
+                        libraryEffects.push( processEffect ( material, matid ) );
+                        materialMap.set( material, `${ matid }-effect` );
+
+                    }
+                }
 
                 node +=
                     `<instance_geometry url="#${ meshid }">` +
-                    '<bind_material><technique_common>' +
-                    `<instance_material url="#${ matid }" />` +
-                    '</bind_material></technique_common>' +
+                    
+                    (
+                        matid != null ? 
+                            '<bind_material><technique_common>' +
+                            `<instance_material symbol="MESH_MATERIAL" target="#${ matid }" />` +
+                            '</technique_common></bind_material>' :
+                            ''
+                    ) +
+
                     '</instance_geometry>';
 
             }
@@ -180,6 +235,8 @@ THREE.ColladaExporter.prototype = {
 
         var geometryMap = new WeakMap();
         var materialMap = new WeakMap();
+        var imageMap = new WeakMap();
+        var libraryImages = [];
         var libraryGeometries = [];
         var libraryEffects = [];
         var libraryMaterials = [];
@@ -198,19 +255,14 @@ THREE.ColladaExporter.prototype = {
 
             // include <library_images>
 
-            // include <library_effects>
             res += `<library_effects>${ libraryEffects.join('') }</library_effects>`
 
-            // include <library_materials>
             res += `<library_materials>${ libraryMaterials.join('') }</library_materials>`
 
-            // include <library_geometries>
             res += `<library_geometries>${ libraryGeometries.join('') }</library_geometries>`
 
-            // include <library_visual_scenes>
             res += `<library_visual_scenes><visual_scene id="defaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
 
-            // include <scene>
             res += '<scene><instance_visual_scene url="#DefaultScene"/></scene>'
 
             res += '</COLLADA>';
