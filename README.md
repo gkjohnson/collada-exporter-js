@@ -1,8 +1,37 @@
+**IN PROGRESS**
+
 # collada-exporter-js
 
-Collada / DAE Format exporter for THREE js geometry.
+Collada / DAE Format exporter for THREE js geometry. The format is described [here](https://www.khronos.org/collada/).
+
+## Use
+
+```js
+var geometry, mesh;
+// ...create geometry to export...
+
+var exporter = new THREE.ColladaExporter();
+
+// Form the file content based on the mesh
+// and geometry within
+var { data, textures } = exporter.parse(mesh);
+
+// save the files!
+
+```
+
+#### ColladaExporter.parse(object)
+
+Converts the provided object tree into a collada file and associated textures. Returns on object with the `dae` file data in `data` and the textures in an array with a name in data in `textures`.
+
+## Limitations
+
+- Can only model geometry, materials, and textures. Animations, skinning, and joints are not included.
+- Only `phong`, `lambert`, and `basic` material tags are supported.
 
 ## Resources
 [DAE Format Specification](https://www.khronos.org/collada/)
 
-[Example DAE Format](http://gis.zcu.cz/projekty/3DGIS/HelloCube/DAE/dae.html)
+[Example Cube DAE Model](http://gis.zcu.cz/projekty/3DGIS/HelloCube/DAE/dae.html)
+
+[Example Elf DAE Model](https://github.com/mrdoob/three.js/tree/dev/examples/models/collada/elf)
