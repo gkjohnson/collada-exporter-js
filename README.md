@@ -26,7 +26,7 @@ Converts the provided object tree into a collada file and associated textures. R
 
 ## Limitations
 
-- Can only model geometry, materials, and textures. Animations, skinning, and joints are not included.
+- Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included.
 - Only `phong`, `lambert`, and `basic` material tags are supported.
 
 ## Resources
