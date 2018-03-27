@@ -39,10 +39,11 @@
 
         // process into the ASCII file format
         var data = exp.parse(obj);
-        console.log('Format', { data });
+        console.log('Format', data);
 
         // parse it back to geometry and compare
-        var res = loader.parse(data);
+        var res = loader.parse(data.data);
+
         console.log(geometry.index.array.join(',') === res.index.array.join(','));
         console.log(geometry.attributes.position.array.join(',') === res.attributes.position.array.join(','));
         console.log(geometry.attributes.normal.array.join(',') === res.attributes.normal.array.join(','));

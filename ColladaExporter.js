@@ -55,7 +55,7 @@ THREE.ColladaExporter.prototype = {
 
 		// Convert an image into a png format for saving
 		var canvas, ctx;
-		function imageToData( image ) {
+		function imageToData( image, ext ) {
 
 			canvas = canvas || document.createElement( 'canvas' );
 			ctx = ctx || canvas.getContext( '2D' );
@@ -66,7 +66,7 @@ THREE.ColladaExporter.prototype = {
 			ctx.drawImage( image, 0, 0 );
 
 			return canvas
-				.toDataURL( 'image/png' )
+				.toDataURL( `image/${ ext }`, 1 )
 				.replace( /^data:image\/(png|jpg);base64,/, '' );
 
 		}
@@ -143,14 +143,11 @@ THREE.ColladaExporter.prototype = {
 
 			if ( meshid == null ) {
 
-				// TODO: Make a new polylist for each each BufferGeometry.group which indicates
-				// support for multiple materials on a mesh.
-
 				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
 				var groups = processGeom.groups != null && processGeom.groups.length !== 0 ? processGeom.groups : [ { start: 0, count: Infinity, materialIndex: 0 } ];
 
-				var gnode = `<geometry id="${ meshid }"><mesh>`;
+				var gnode = `<geometry id="${ meshid }" name="${ processGeom.name }"><mesh>`;
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
 					var group = groups[ i ];
@@ -231,8 +228,28 @@ THREE.ColladaExporter.prototype = {
 		// Returns the image library
 		function processTexture( tex ) {
 
-			// ...
+			var texid = imageMap.get( tex.image );
+			if ( texid == null ) {
+				
+				matid = `Image${ libraryImages.length + 1 }`;
 
+				var ext = 'png';
+				var name = tex.name || matid;
+				var imageNode = `<image id="${ texid }" name="${ name }">`;
+				imageNode += `<init_from>${ name }.${ ext }</init_from>`;
+				imageNode += '</image>';
+
+				libraryImages.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
+				imageMap.set( tex.image, texid );
+				textures.push({
+					name,
+					ext,
+					data: imageToData( tex.image, ext )
+				})
+
+			}
+
+			return texid;
 		}
 
 		// Process the given material into the material and effect libraries
@@ -350,6 +367,8 @@ THREE.ColladaExporter.prototype = {
 		var geometryMap = new WeakMap();
 		var materialMap = new WeakMap();
 		var imageMap = new WeakMap();
+		var textures = [];
+
 		var libraryImages = [];
 		var libraryGeometries = [];
 		var libraryEffects = [];
@@ -381,7 +400,10 @@ THREE.ColladaExporter.prototype = {
 
 		res += '</COLLADA>';
 
-		return format( res );
+		return {
+			data: format( res ),
+			textures
+		};
 
 	}
 
