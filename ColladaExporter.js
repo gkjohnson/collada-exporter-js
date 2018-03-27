@@ -52,6 +52,24 @@ THREE.ColladaExporter.prototype = {
 
 		}
 
+		// Convert an image into a png format for saving
+		var canvas, ctx;
+		function imageToData( image ) {
+
+			canvas = canvas || document.createElement('canvas');
+			ctx = ctx || canvas.getContext('2D');
+
+			canvas.width = image.naturalWidth;
+			canvas.height = image.naturalHeight;
+
+			ctx.drawImage(image, 0, 0);
+
+			return canvas
+				.toDataURL('image/png')
+				.replace(/^data:image\/(png|jpg);base64,/, '');
+		
+		}
+
 		// Returns the string for a geometry's attribute
 		function getAttribute( attr, name, params, type ) {
 
