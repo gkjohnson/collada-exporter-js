@@ -205,9 +205,9 @@ THREE.ColladaExporter.prototype = {
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
 
-						// TODO: are "vcount" and "p" tags needed if they directly map to the ordered attributes?
-						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
+						// The "vcount" and "p" tags seem to be optional
+						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+						// gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
 						gnode += '</polylist>';
 
 					}
