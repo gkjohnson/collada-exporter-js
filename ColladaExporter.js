@@ -70,14 +70,22 @@ THREE.ColladaExporter.prototype = {
 		
 		}
 
+		// Returns an array of the same type starting at the `st` index,
+		// and `ct` length
+		function subArray( arr, st, ct ) {
+			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, ct );
+		}
+
 		// Returns the string for a geometry's attribute
-		function getAttribute( attr, name, params, type ) {
+		function getAttribute( attr, name, params, type, group ) {
+
+			var arr = subArray( attr.array, group.start, group.count );
 
 			var res =
 					`<source id="${ name }"><float_array id="${ name }-array">` +
-					attr.positions.array.join( ' ' ) +
+					arr.join( ' ' ) +
 					'</float_array>' +
-					`<technique_common><accessor source="${ name }-array" count="${ attr.positions.array.length }" stride="3">` +
+					`<technique_common><accessor source="${ name }-array" count="${ arr.length }" stride="3">` +
 
 					params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
 
@@ -134,46 +142,56 @@ THREE.ColladaExporter.prototype = {
 
 				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
-				var polylistchildren = '';
-				var gnode = `<geometry id="${ meshid }"><mesh>`;
+				var groups = processGeom.groups || [{ start: 0, count: Infinity, materialIndex: 0 }]
 
-				gnode += getAttribute( processGeom.attributes.position, `${ meshid }-position`, [ 'X', 'Y', 'Z' ], 'float' );
+				for (var i = 0, l = groups.length; i < l; i ++ ) {
+					var group = groups[i];
+					var polylistchildren = '';
+					var gnode = `<geometry id="${ meshid }"><mesh>`;
 
-				if ( 'normal' in processGeom.attributes ) {
+					var posName = `${ meshid }-position-${ i }`;
+					gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float', group );
 
-					gnode += getAttribute( processGeom.attributes.normal, `${ meshid }-normal`, [ 'X', 'Y', 'Z' ], 'float' );
-					polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
+					if ( 'normal' in processGeom.attributes ) {
 
-				}
+						var normName = `${ meshid }-normal-${ i }`;
+						gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float', group );
+						polylistchildren += `<input semantic="NORMAL" source="#${ normName }" />`;
 
-				if ( 'color' in processGeom.attributes ) {
+					}
 
-					gnode += getAttribute( processGeom.attributes.color, `${ meshid }-color`, [ 'X', 'Y', 'Z' ], 'uint8' );
-					polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
+					if ( 'color' in processGeom.attributes ) {
 
-				}
+						var colName = `${ meshid }-color-${ i }`;
+						gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8', group );
+						polylistchildren += `<input semantic="COLOR" source="#${ colName }" />`;
 
-				gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
+					}
 
+					var vertName = `${ meshid }-vertices-${ i }`;
+					gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
 
-				if ( processGeom.indices ) {
+					if ( processGeom.indices ) {
 
-					var polycount = processGeom.attributes.position.length / 3;
-					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-					gnode += polylistchildren;
+						var subarr = subArray( processGeom.attributes.position.array, group.start, group.count );
+						var polycount = subarr.length / 3;
+						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+						gnode += polylistchildren;
 
-					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-					gnode += `<p>${ processGeom.attributes.position.array.map( ( v, i ) => i ).join( ' ' ) }</p>`;
+						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
 
-				} else {
+					} else {
 
-					var polycount = processGeom.indices.length / 3;
-					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-					gnode += polylistchildren;
+						var subarr = subArray( processGeom.indices.array, group.start, group.count );
+						var polycount = subarr.length / 3;
+						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+						gnode += polylistchildren;
 
-					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-					gnode += `<p>${ processGeom.indices.array.join( ' ' ) }</p>`;
+						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
 
+					}
 				}
 
 				gnode += `</mesh></geometry>`;
@@ -278,12 +296,12 @@ THREE.ColladaExporter.prototype = {
 
 				var meshid = processGeometry( o.geometry, meshid );
 
-				var matid = null;
+				var matids = null;
 
 				if ( o.material != null ) {
 
-					// TODO: if the materials are an array we need to process all of them
-					matid = processMaterial( o.material );
+					var materials = Array.isArray( o.material ) ? o.material : [ o.material ];
+					matids = materials.map( m => processMaterial( m ) );
 
 				}
 
@@ -291,10 +309,12 @@ THREE.ColladaExporter.prototype = {
 					`<instance_geometry url="#${ meshid }">` +
 
 					(
-						matid != null ?
-							'<bind_material><technique_common>' +
-							`<instance_material symbol="MESH_MATERIAL" target="#${ matid }" />` +
-							'</technique_common></bind_material>' :
+						matids != null ?
+							matids.map(( id, i ) => 
+								'<bind_material><technique_common>' +
+								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" />` +
+								'</technique_common></bind_material>'
+							).join('') :
 							''
 					) +
 
