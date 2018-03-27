@@ -24,14 +24,15 @@ THREE.ColladaExporter.prototype = {
 
 			const IS_END_TAG = /^<\//;
 			const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
+			const IS_TAG = /^<.*>$/;
 			const pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
 
 			let tagnum = 0;
 			return urdf
-				.match( /<[^>]+>/g )
+				.match( /(<[^>]+>)|([^<]*)/g )
 				.map( tag => {
 
-					if ( ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
+					if ( IS_TAG.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
 
 						tagnum --;
 
@@ -39,7 +40,7 @@ THREE.ColladaExporter.prototype = {
 
 					const res = `${pad( '  ', tagnum )}${tag}`;
 
-					if ( ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
+					if ( IS_TAG.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
 
 						tagnum ++;
 
@@ -96,18 +97,21 @@ THREE.ColladaExporter.prototype = {
 		}
 
 		// Returns the string for a node's transform information
+		var rotmat;
 		function getTransform( o ) {
 
 			var position = o.position;
 			var rotation = o.rotation;
 			var scale = o.scale;
 
+
 			var xvec = new THREE.Vector3();
 			var yvec = new THREE.Vector3();
 			var zvec = new THREE.Vector3();
 
-			( new THREE.Matrix4() )
-				.compose( new THREE.Vector3( 0, 0, 0 ), rotation, new THREE.Vector3( 1, 1, 1 ) )
+			var rotmat = rotmat || new THREE.Matrix4();
+			rotmat
+				.makeRotationFromEuler( rotation )
 				.extractBasis( xvec, yvec, zvec );
 
 			var res =
@@ -144,10 +148,10 @@ THREE.ColladaExporter.prototype = {
 
 				var groups = processGeom.groups || [{ start: 0, count: Infinity, materialIndex: 0 }]
 
+				var gnode = `<geometry id="${ meshid }"><mesh>`;
 				for (var i = 0, l = groups.length; i < l; i ++ ) {
 					var group = groups[i];
 					var polylistchildren = '';
-					var gnode = `<geometry id="${ meshid }"><mesh>`;
 
 					var posName = `${ meshid }-position-${ i }`;
 					gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float', group );
@@ -297,7 +301,6 @@ THREE.ColladaExporter.prototype = {
 				var meshid = processGeometry( o.geometry, meshid );
 
 				var matids = null;
-
 				if ( o.material != null ) {
 
 					var materials = Array.isArray( o.material ) ? o.material : [ o.material ];
@@ -326,6 +329,7 @@ THREE.ColladaExporter.prototype = {
 
 			node += '</node>';
 
+			return node;
 		}
 
 		var geometryMap = new WeakMap();
