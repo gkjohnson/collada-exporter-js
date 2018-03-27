@@ -85,10 +85,10 @@ THREE.ColladaExporter.prototype = {
 			var arr = subArray( attr.array, group.start, group.count );
 
 			var res =
-					`<source id="${ name }"><float_array id="${ name }-array">` +
+					`<source id="${ name }"><float_array id="${ name }-array" count="${ arr.length }">` +
 					arr.join( ' ' ) +
 					'</float_array>' +
-					`<technique_common><accessor source="${ name }-array" count="${ arr.length }" stride="3">` +
+					`<technique_common><accessor source="#${ name }-array" count="${ Math.floor( arr.length / attr.itemSize ) }" stride="${ attr.itemSize }">` +
 
 					params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
 
@@ -147,7 +147,7 @@ THREE.ColladaExporter.prototype = {
 
 				var groups = processGeom.groups != null && processGeom.groups.length !== 0 ? processGeom.groups : [ { start: 0, count: Infinity, materialIndex: 0 } ];
 
-				var gnode = `<geometry id="${ meshid }" name="${ processGeom.name }"><mesh>`;
+				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
 					var group = groups[ i ];
@@ -161,7 +161,7 @@ THREE.ColladaExporter.prototype = {
 
 						var normName = `${ meshid }-normal-${ i }`;
 						gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float', group );
-						polylistchildren += `<input semantic="NORMAL" source="#${ normName }" />`;
+						polylistchildren += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
 
 					}
 
@@ -170,7 +170,7 @@ THREE.ColladaExporter.prototype = {
 
 						var uvName = `${ meshid }-texcoord-${ i }`;
 						gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float', group );
-						polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" />`;
+						polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
 
 					}
 
@@ -179,13 +179,13 @@ THREE.ColladaExporter.prototype = {
 
 						var colName = `${ meshid }-color-${ i }`;
 						gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8', group );
-						polylistchildren += `<input semantic="COLOR" source="#${ colName }" />`;
+						polylistchildren += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
 
 					}
 
 					var vertName = `${ meshid }-vertices-${ i }`;
 					gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
-					polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" />`;
+					polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 
 					if ( processGeom.index != null ) {
 
@@ -205,6 +205,7 @@ THREE.ColladaExporter.prototype = {
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
 
+						// TODO: are "vcount" and "p" tags needed if they directly map to the ordered attributes?
 						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
 						gnode += '</polylist>';
@@ -314,7 +315,7 @@ THREE.ColladaExporter.prototype = {
 					'</effect>';
 
 
-				libraryMaterials.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
+				libraryMaterials.push( `<material id="${ matid }" name="${ m.name }"><instance_effect url="#${ matid }-effect" /></material>` );
 				libraryEffects.push( effectnode );
 				materialMap.set( m, `${ matid }-effect` );
 
@@ -398,9 +399,9 @@ THREE.ColladaExporter.prototype = {
 
 		res += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
 
-		res += `<library_visual_scenes><visual_scene id="DefaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
+		res += `<library_visual_scenes><visual_scene id="Scene" name="scene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
 
-		res += '<scene><instance_visual_scene url="#DefaultScene"/></scene>';
+		res += '<scene><instance_visual_scene url="#Scene"/></scene>';
 
 		res += '</COLLADA>';
 

@@ -48,7 +48,7 @@
 
         const zip = new JSZip();
         zip.file('example.dae', res.data);
-        res.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
+        data.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
         zip
             .generateAsync({ type: 'uint8Array' })
             // .then( zipdata => saveData(zipdata, 'colladaexample.zip' ) );
