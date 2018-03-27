@@ -271,6 +271,10 @@ THREE.ColladaExporter.prototype = {
 
 					type = 'lambert';
 
+				} else if ( m instanceof THREE.MeshBasicMaterial ) {
+
+					type = 'constant';
+
 				}
 
 				var emissive = m.emissive ? m.emissive : new THREE.Color( 0, 0, 0 );
