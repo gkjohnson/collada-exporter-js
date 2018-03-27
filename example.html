@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script type="text/javascript" src="./node_modules/three/build/three.min.js"></script>
-    <script type="text/javascript" src="./node_modules/three/examples/js/loaders/ColladaLoader.js"></script>
-    <script type="text/javascript" src="./ColladaExporter.js"></script>
+    <script src="./node_modules/three/build/three.min.js"></script>
+    <script src="./node_modules/three/examples/js/loaders/ColladaLoader.js"></script>
+    <script src="./node_modules/jszip/dist/jszip.min.js"></script>
 
-    <title></title>
+    <script src="./ColladaExporter.js"></script>
+
+    <title>Collada Exporter Example</title>
 </head>
 <body>
 
@@ -13,11 +15,11 @@
     <script type="text/javascript">
         // https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
         var saveData = (function () {
-            var a = document.createElement("a");
+            var a = document.createElement('a');
             document.body.appendChild(a);
-            a.style = "display: none";
+            a.style = 'display: none';
             return function (data, fileName) {
-                var blob = new Blob([ data ], { type: "octet/stream" }),
+                var blob = new Blob([ data ], { type: 'octet/stream' }),
                     url = window.URL.createObjectURL(blob);
                 a.href = url;
                 a.download = fileName;
@@ -28,7 +30,7 @@
 
         // create the geometry
         var geometry = new THREE.SphereBufferGeometry( 5, 10, 10 );
-        var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+        var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
         var mesh = new THREE.Mesh( geometry, material );
         var obj = new THREE.Object3D();
         var loader = new THREE.ColladaLoader();
@@ -44,10 +46,14 @@
         // parse it back to geometry and compare
         var res = loader.parse(data.data);
 
-        console.log(geometry.index.array.join(',') === res.index.array.join(','));
-        console.log(geometry.attributes.position.array.join(',') === res.attributes.position.array.join(','));
-        console.log(geometry.attributes.normal.array.join(',') === res.attributes.normal.array.join(','));
-        console.log(!geometry.attributes.color && !res.attributes.color);
+        const zip = new JSZip();
+        zip.file('example.dae', res.data);
+        res.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
+        zip
+            .generateAsync({ type: 'uint8Array' })
+            // .then( zipdata => saveData(zipdata, 'colladaexample.zip' ) );
+
+        // TODO: Validate the parsed example
 
     </script>
 </body>
