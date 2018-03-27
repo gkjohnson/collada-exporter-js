@@ -52,7 +52,9 @@ THREE.ColladaExporter.prototype = {
 
         }
 
-        function processAttribute( attr, name, params, type) {
+        // Returns the string for a geometry's attribute
+        function getAttribute( attr, name, params, type) {
+            
             var res = 
                     `<source id="${ name }"><float_array id="${ name }-array">` +
                     attr.positions.array.join(' ') +
@@ -67,94 +69,8 @@ THREE.ColladaExporter.prototype = {
 
         }
 
-        function processGeometry ( g, meshid ) {
-            var polylistchildren = '';
-            var gnode = `<geometry id="${ meshid }"><mesh>`;
-
-            gnode += processAttribute( g.attributes.position, `${ meshid }-position`, ['X', 'Y', 'Z'], 'float');
-
-            if ( 'normal' in g.attributes ) {
-                gnode += processAttribute( g.attributes.normal, `${ meshid }-normal`, ['X', 'Y', 'Z'], 'float');
-                polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
-            }
-
-            if ( 'color' in g.attributes ) {
-                gnode += processAttribute( g.attributes.color, `${ meshid }-color`, ['X', 'Y', 'Z'], 'uint8');
-                polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
-            }
-
-            gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
-
-
-            if ( g.indices ) {
-
-                var polycount = g.attributes.position.length / 3;
-                gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-                gnode += polylistchildren;
-
-                gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
-                gnode += `<p>${ g.attributes.position.array.map( (v, i) => i ).join( ' ' ) }</p>`;
-
-            } else {
-
-                var polycount = g.indices.length / 3;
-                gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-                gnode += polylistchildren;
-
-                gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
-                gnode += `<p>${ g.indices.array.join( ' ' ) }</p>`;
-
-            }
-
-            gnode += `</mesh></geometry>`;
-
-            return gnode;
-        }
-
-        function processEffect ( m, matid ) {
-            // TODO: return an effect for the material
-        }
-
-        function processEffect ( m, matid ) {
-            // TODO: return the library material
-            
-            var type = 'phong';
-
-            var effectnode = 
-                `<effect id="${ matid }">` +
-                '<profile_COMMON><technique>' +
-
-                `<${ type }>` +
-
-                `<emission><color>${} ${} ${}</color></emission>` +
-
-                `<ambient><color>${} ${} ${}</color></ambient>` +
-                
-                `<diffuse><color>${} ${} ${}</color></diffuse>` +
-
-
-                `<specular><color>${} ${} ${}</color></specular>` +
-
-                `<shininess><float>${}</float></shininess>` +
-
-
-                `<reflective><color>${} ${} ${}</color></reflective>` +
-
-                `<reflectivity><float>${}</float></reflectivity>` +
-
-
-                `<transparent><float>${}</float></transparent>` +
-
-                `<transparency><float>${}</float></transparency>` +
-
-                `</${ type }>` +
-
-                '</technique></profile_COMMON>' +
-                '</effect>';
-
-        }
-
-        function processTransform ( o ) {
+        // Returns the string for a node's transform information
+        function getTransform ( o ) {
 
             var position = o.position;
             var rotation = o.rotation;
@@ -177,39 +93,144 @@ THREE.ColladaExporter.prototype = {
 
         }
 
-        function processNode ( o ) {
+        // Process the given piece of geometry into the geometry library
+        function processGeometry ( g ) {
 
-            var node = `<node name="${child.name}">`;
+            var meshid = geometryMap.get( geometry );
 
-            node += processTransform( o );
+            if ( meshid == null) {
+                
+                meshid = `Mesh${ libraryGeometries.length + 1 }`;
+
+                var polylistchildren = '';
+                var gnode = `<geometry id="${ meshid }"><mesh>`;
+
+                gnode += getAttribute( g.attributes.position, `${ meshid }-position`, ['X', 'Y', 'Z'], 'float');
+
+                if ( 'normal' in g.attributes ) {
+                    gnode += getAttribute( g.attributes.normal, `${ meshid }-normal`, ['X', 'Y', 'Z'], 'float');
+                    polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
+                }
+
+                if ( 'color' in g.attributes ) {
+                    gnode += getAttribute( g.attributes.color, `${ meshid }-color`, ['X', 'Y', 'Z'], 'uint8');
+                    polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
+                }
+
+                gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
+
+
+                if ( g.indices ) {
+
+                    var polycount = g.attributes.position.length / 3;
+                    gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
+                    gnode += polylistchildren;
+
+                    gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
+                    gnode += `<p>${ g.attributes.position.array.map( (v, i) => i ).join( ' ' ) }</p>`;
+
+                } else {
+
+                    var polycount = g.indices.length / 3;
+                    gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
+                    gnode += polylistchildren;
+
+                    gnode += `<vcount>${ (new Array( polycount )).fill( 3 ).join( ' ' ) }</vcount>`;
+                    gnode += `<p>${ g.indices.array.join( ' ' ) }</p>`;
+
+                }
+
+                gnode += `</mesh></geometry>`;
+
+                libraryGeometries.push( gnode );
+                geometryMap.set( geometry, meshid );
+                
+            }
+
+            return meshid;
+
+        }
+
+        // Process the given material into the material and effect libraries
+        function processMaterial ( m ) {
+
+            var matid = materialMap.get( m );
+
+            if ( matid == null) {
+                
+                matid = `Mat${ libraryEffects.length + 1 }`;
+                
+                var type = 'basic';
+
+                if ( m instanceof THREE.MeshPhongMaterial) {
+
+                    type = 'phong';
+                
+                } else if ( m instanceof THREE.MeshLambertMaterial ) {
+
+                    type = 'lambert';
+
+                }
+
+                var effectnode = 
+                    `<effect id="${ matid }">` +
+                    '<profile_COMMON><technique>' +
+
+                    `<${ type }>` +
+
+                    `<emission><color>${} ${} ${}</color></emission>` +
+
+                    `<ambient><color>${} ${} ${}</color></ambient>` +
+                    
+                    `<diffuse><color>${} ${} ${}</color></diffuse>` +
+
+
+                    `<specular><color>${} ${} ${}</color></specular>` +
+
+                    `<shininess><float>${}</float></shininess>` +
+
+
+                    `<reflective><color>${} ${} ${}</color></reflective>` +
+
+                    `<reflectivity><float>${}</float></reflectivity>` +
+
+
+                    `<transparent><float>${}</float></transparent>` +
+
+                    `<transparency><float>${}</float></transparency>` +
+
+                    `</${ type }>` +
+
+                    '</technique></profile_COMMON>' +
+                    '</effect>';
+
+
+                libraryMaterials.push(`<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>`)
+                libraryEffects.push( effectnode );
+                materialMap.set( material, `${ matid }-effect` );
+
+            }
+
+            return matid;
+
+        }
+
+        function processObject ( o ) {
+
+            var node = `<node name="${ child.name }">`;
+
+            node += getTransform( o );
 
             if ( o instanceof THREE.Mesh && o.geometry != null ) {
 
-                var meshid = geometryMap.get( geometry );
-                if ( meshid == null) {
-                    
-                    meshid = `Mesh${ libraryGeometries.length + 1 }`;
-                    libraryGeometries.push( processGeometry ( o.geometry, meshid ) );
-                    geometryMap.set( geometry, meshid );
-
-                }
+                var meshid = processGeometry ( o.geometry, meshid );
 
                 var matid = null;
 
                 if ( o.material != null ) {
                 
-                    var material = o.material;
-                    matid = materialMap.get( material );
+                    matid = processMaterial( o.material );
 
-                    if ( matid == null) {
-                        
-                        matid = `Mat${ libraryEffects.length + 1 }`;
-
-                        libraryMaterials.push(`<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>`)
-                        libraryEffects.push( processEffect ( material, matid ) );
-                        materialMap.set( material, `${ matid }-effect` );
-
-                    }
                 }
 
                 node +=
@@ -227,7 +248,7 @@ THREE.ColladaExporter.prototype = {
 
             }
 
-            o.children.forEach(c => node += processNode(c));
+            o.children.forEach(c => node += processObject( c ));
 
             node += '</node>';
 
@@ -240,7 +261,7 @@ THREE.ColladaExporter.prototype = {
         var libraryGeometries = [];
         var libraryEffects = [];
         var libraryMaterials = [];
-        var libraryVisualScenes = processNode(o);
+        var libraryVisualScenes = processObject( o );
 
         var res = 
             '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
@@ -267,7 +288,7 @@ THREE.ColladaExporter.prototype = {
 
             res += '</COLLADA>';
 
-        return format(res);
+        return format( res );
 
     }
 
