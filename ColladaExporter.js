@@ -119,25 +119,36 @@ THREE.ColladaExporter.prototype = {
 
 			var meshid = geometryMap.get( g );
 
+			// convert the geometry to bufferGeometry if it isn't already
+			var processGeom = g;
+			if ( processGeom instanceof THREE.Geometry ) {
+
+				processGeom = ( new THREE.BufferGeometry ).fromGeometry( processGeom );
+
+			}
+
 			if ( meshid == null ) {
+
+				// TODO: Make a new polylist for each each BufferGeometry.group which indicates
+				// support for multiple materials on a mesh.
 
 				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
 				var polylistchildren = '';
 				var gnode = `<geometry id="${ meshid }"><mesh>`;
 
-				gnode += getAttribute( g.attributes.position, `${ meshid }-position`, [ 'X', 'Y', 'Z' ], 'float' );
+				gnode += getAttribute( processGeom.attributes.position, `${ meshid }-position`, [ 'X', 'Y', 'Z' ], 'float' );
 
-				if ( 'normal' in g.attributes ) {
+				if ( 'normal' in processGeom.attributes ) {
 
-					gnode += getAttribute( g.attributes.normal, `${ meshid }-normal`, [ 'X', 'Y', 'Z' ], 'float' );
+					gnode += getAttribute( processGeom.attributes.normal, `${ meshid }-normal`, [ 'X', 'Y', 'Z' ], 'float' );
 					polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
 
 				}
 
-				if ( 'color' in g.attributes ) {
+				if ( 'color' in processGeom.attributes ) {
 
-					gnode += getAttribute( g.attributes.color, `${ meshid }-color`, [ 'X', 'Y', 'Z' ], 'uint8' );
+					gnode += getAttribute( processGeom.attributes.color, `${ meshid }-color`, [ 'X', 'Y', 'Z' ], 'uint8' );
 					polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
 
 				}
@@ -145,23 +156,23 @@ THREE.ColladaExporter.prototype = {
 				gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
 
 
-				if ( g.indices ) {
+				if ( processGeom.indices ) {
 
-					var polycount = g.attributes.position.length / 3;
+					var polycount = processGeom.attributes.position.length / 3;
 					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
 					gnode += polylistchildren;
 
 					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-					gnode += `<p>${ g.attributes.position.array.map( ( v, i ) => i ).join( ' ' ) }</p>`;
+					gnode += `<p>${ processGeom.attributes.position.array.map( ( v, i ) => i ).join( ' ' ) }</p>`;
 
 				} else {
 
-					var polycount = g.indices.length / 3;
+					var polycount = processGeom.indices.length / 3;
 					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
 					gnode += polylistchildren;
 
 					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-					gnode += `<p>${ g.indices.array.join( ' ' ) }</p>`;
+					gnode += `<p>${ processGeom.indices.array.join( ' ' ) }</p>`;
 
 				}
 
@@ -189,6 +200,7 @@ THREE.ColladaExporter.prototype = {
 		function processMaterial( m ) {
 
 			// TODO: Process images into the image libraries
+			// TODO: Process all images including specular, etc
 
 			var matid = materialMap.get( m );
 
@@ -270,6 +282,7 @@ THREE.ColladaExporter.prototype = {
 
 				if ( o.material != null ) {
 
+					// TODO: if the materials are an array we need to process all of them
 					matid = processMaterial( o.material );
 
 				}
