@@ -27,7 +27,7 @@ Converts the provided object tree into a collada file and associated textures. R
 ## Limitations
 
 - Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included.
-- Only `phong`, `lambert`, and `basic` material tags are supported.
+- Only `phong` (default), `lambert`, and `constant` material tags are supported.
 
 ## Resources
 [DAE Format Specification](https://www.khronos.org/collada/)
