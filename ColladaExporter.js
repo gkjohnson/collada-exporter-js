@@ -57,24 +57,26 @@ THREE.ColladaExporter.prototype = {
 		var canvas, ctx;
 		function imageToData( image ) {
 
-			canvas = canvas || document.createElement('canvas');
-			ctx = ctx || canvas.getContext('2D');
+			canvas = canvas || document.createElement( 'canvas' );
+			ctx = ctx || canvas.getContext( '2D' );
 
 			canvas.width = image.naturalWidth;
 			canvas.height = image.naturalHeight;
 
-			ctx.drawImage(image, 0, 0);
+			ctx.drawImage( image, 0, 0 );
 
 			return canvas
-				.toDataURL('image/png')
-				.replace(/^data:image\/(png|jpg);base64,/, '');
-		
+				.toDataURL( 'image/png' )
+				.replace( /^data:image\/(png|jpg);base64,/, '' );
+
 		}
 
 		// Returns an array of the same type starting at the `st` index,
 		// and `ct` length
 		function subArray( arr, st, ct ) {
-			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, ct );
+
+			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, Math.min( arr.length, ct ) );
+
 		}
 
 		// Returns the string for a geometry's attribute
@@ -90,7 +92,7 @@ THREE.ColladaExporter.prototype = {
 
 					params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
 
-					'</technique_common></source>';
+					'</accessor></technique_common></source>';
 
 			return res;
 
@@ -135,7 +137,7 @@ THREE.ColladaExporter.prototype = {
 			var processGeom = g;
 			if ( processGeom instanceof THREE.Geometry ) {
 
-				processGeom = ( new THREE.BufferGeometry ).fromGeometry( processGeom );
+				processGeom = ( new THREE.BufferGeometry() ).fromGeometry( processGeom );
 
 			}
 
@@ -146,16 +148,18 @@ THREE.ColladaExporter.prototype = {
 
 				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
-				var groups = processGeom.groups || [{ start: 0, count: Infinity, materialIndex: 0 }]
+				var groups = processGeom.groups != null && processGeom.groups.length !== 0 ? processGeom.groups : [ { start: 0, count: Infinity, materialIndex: 0 } ];
 
 				var gnode = `<geometry id="${ meshid }"><mesh>`;
-				for (var i = 0, l = groups.length; i < l; i ++ ) {
-					var group = groups[i];
+				for ( var i = 0, l = groups.length; i < l; i ++ ) {
+
+					var group = groups[ i ];
 					var polylistchildren = '';
 
 					var posName = `${ meshid }-position-${ i }`;
 					gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float', group );
 
+					// serialize normals
 					if ( 'normal' in processGeom.attributes ) {
 
 						var normName = `${ meshid }-normal-${ i }`;
@@ -164,6 +168,16 @@ THREE.ColladaExporter.prototype = {
 
 					}
 
+					// serialize uvs
+					if ( 'uv' in processGeom.attributes ) {
+
+						var uvName = `${ meshid }-texcoord-${ i }`;
+						gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float', group );
+						polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" />`;
+
+					}
+
+					// serialize colors
 					if ( 'color' in processGeom.attributes ) {
 
 						var colName = `${ meshid }-color-${ i }`;
@@ -174,8 +188,20 @@ THREE.ColladaExporter.prototype = {
 
 					var vertName = `${ meshid }-vertices-${ i }`;
 					gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
+					polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" />`;
 
-					if ( processGeom.indices ) {
+					if ( processGeom.index != null ) {
+
+						var subarr = subArray( processGeom.index.array, group.start, group.count );
+						var polycount = subarr.length / 3;
+						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+						gnode += polylistchildren;
+
+						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
+						gnode += '</polylist>';
+
+					} else {
 
 						var subarr = subArray( processGeom.attributes.position.array, group.start, group.count );
 						var polycount = subarr.length / 3;
@@ -184,18 +210,10 @@ THREE.ColladaExporter.prototype = {
 
 						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
-
-					} else {
-
-						var subarr = subArray( processGeom.indices.array, group.start, group.count );
-						var polycount = subarr.length / 3;
-						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += polylistchildren;
-
-						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
+						gnode += '</polylist>';
 
 					}
+
 				}
 
 				gnode += `</mesh></geometry>`;
@@ -231,7 +249,7 @@ THREE.ColladaExporter.prototype = {
 				matid = `Mat${ libraryEffects.length + 1 }`;
 
 				var type = 'phong';
-				
+
 				if ( m instanceof THREE.MeshLambertMaterial ) {
 
 					type = 'lambert';
@@ -309,11 +327,11 @@ THREE.ColladaExporter.prototype = {
 
 					(
 						matids != null ?
-							matids.map(( id, i ) => 
+							matids.map( ( id, i ) =>
 								'<bind_material><technique_common>' +
 								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" />` +
 								'</technique_common></bind_material>'
-							).join('') :
+							).join( '' ) :
 							''
 					) +
 
@@ -326,6 +344,7 @@ THREE.ColladaExporter.prototype = {
 			node += '</node>';
 
 			return node;
+
 		}
 
 		var geometryMap = new WeakMap();
