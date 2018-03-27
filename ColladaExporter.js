@@ -94,6 +94,7 @@ THREE.ColladaExporter.prototype = {
         }
 
         // Process the given piece of geometry into the geometry library
+        // Returns the mesh id
         function processGeometry ( g ) {
 
             var meshid = geometryMap.get( geometry );
@@ -144,15 +145,26 @@ THREE.ColladaExporter.prototype = {
 
                 libraryGeometries.push( gnode );
                 geometryMap.set( geometry, meshid );
-                
+
             }
 
             return meshid;
 
         }
 
+        // Process the given texture into the image library
+        // Returns the image library
+        function processTexture( tex ) {
+
+            // ...
+        
+        }
+
         // Process the given material into the material and effect libraries
+        // Returns the material id
         function processMaterial ( m ) {
+
+            // TODO: Process images into the image libraries
 
             var matid = materialMap.get( m );
 
@@ -172,32 +184,37 @@ THREE.ColladaExporter.prototype = {
 
                 }
 
+                var emissive = m.emissive ? m.emissive : new THREE.Color(0, 0, 0);
+                var diffuse = m.color ? m.color : new THREE.Color(0, 0, 0);
+                var ambient = m.ambient ? m.ambient : new THREE.Color(0, 0, 0);
+                var specular = m.specular ? m.specular : new THREE.Color(1, 1, 1);
+                var shininess = m.shininess || 0;
+                var reflectivity = m.reflectivity || 0;
+
+                var transparencyNode = m.opacity < 1.0 ?
+                    '<transparent><float>1</float></transparent>' +
+                    `<transparency><float>${ m.opacity }</float></transparency>`:
+                    '';
+
                 var effectnode = 
                     `<effect id="${ matid }">` +
                     '<profile_COMMON><technique>' +
 
                     `<${ type }>` +
 
-                    `<emission><color>${} ${} ${}</color></emission>` +
-
-                    `<ambient><color>${} ${} ${}</color></ambient>` +
+                    `<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b }</color></emission>` +
                     
-                    `<diffuse><color>${} ${} ${}</color></diffuse>` +
+                    `<diffuse><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></diffuse>` +
 
+                    `<specular><color>${ specular.r } ${ specular.g } ${ specular.b }</color></specular>` +
 
-                    `<specular><color>${} ${} ${}</color></specular>` +
+                    `<shininess><float>${ shininess }</float></shininess>` +
 
-                    `<shininess><float>${}</float></shininess>` +
+                    `<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></reflective>` +
 
+                    `<reflectivity><float>${ reflectivity }</float></reflectivity>` +
 
-                    `<reflective><color>${} ${} ${}</color></reflective>` +
-
-                    `<reflectivity><float>${}</float></reflectivity>` +
-
-
-                    `<transparent><float>${}</float></transparent>` +
-
-                    `<transparency><float>${}</float></transparency>` +
+                    transparencyNode +
 
                     `</${ type }>` +
 
@@ -215,6 +232,7 @@ THREE.ColladaExporter.prototype = {
 
         }
 
+        // Recursively process the object into a scene
         function processObject ( o ) {
 
             var node = `<node name="${ child.name }">`;
