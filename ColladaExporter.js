@@ -80,16 +80,18 @@ THREE.ColladaExporter.prototype = {
 			var yvec = new THREE.Vector3();
 			var zvec = new THREE.Vector3();
 
-			( new Matrix4() )
-				.compose( new THREE.Vector3( 0, 0, 0 ), rot, new THREE.Vector3( 1, 1, 1 ) )
+			( new THREE.Matrix4() )
+				.compose( new THREE.Vector3( 0, 0, 0 ), rotation, new THREE.Vector3( 1, 1, 1 ) )
 				.extractBasis( xvec, yvec, zvec );
 
 			var res =
-				`<translate>${ o.position.x } ${ o.position.y } ${ o.position.z }</translate>` +
+				`<translate>${ position.x } ${ position.y } ${ position.z }</translate>` +
 				`<rotation>${ xvec.x } ${ xvec.y } ${ xvec.z }</rotation>` +
 				`<rotation>${ yvec.x } ${ yvec.y } ${ yvec.z }</rotation>` +
 				`<rotation>${ zvec.x } ${ zvec.y } ${ zvec.z }</rotation>` +
-				`<scale>${ o.scale.x } ${ o.scale.y } ${ o.scale.z }</scale>`;
+				`<scale>${ scale.x } ${ scale.y } ${ scale.z }</scale>`;
+
+			return res;
 
 		}
 
@@ -97,7 +99,7 @@ THREE.ColladaExporter.prototype = {
 		// Returns the mesh id
 		function processGeometry( g ) {
 
-			var meshid = geometryMap.get( geometry );
+			var meshid = geometryMap.get( g );
 
 			if ( meshid == null ) {
 
@@ -148,7 +150,7 @@ THREE.ColladaExporter.prototype = {
 				gnode += `</mesh></geometry>`;
 
 				libraryGeometries.push( gnode );
-				geometryMap.set( geometry, meshid );
+				geometryMap.set( g, meshid );
 
 			}
 
@@ -190,7 +192,6 @@ THREE.ColladaExporter.prototype = {
 
 				var emissive = m.emissive ? m.emissive : new THREE.Color( 0, 0, 0 );
 				var diffuse = m.color ? m.color : new THREE.Color( 0, 0, 0 );
-				var ambient = m.ambient ? m.ambient : new THREE.Color( 0, 0, 0 );
 				var specular = m.specular ? m.specular : new THREE.Color( 1, 1, 1 );
 				var shininess = m.shininess || 0;
 				var reflectivity = m.reflectivity || 0;
@@ -228,7 +229,7 @@ THREE.ColladaExporter.prototype = {
 
 				libraryMaterials.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
 				libraryEffects.push( effectnode );
-				materialMap.set( material, `${ matid }-effect` );
+				materialMap.set( m, `${ matid }-effect` );
 
 			}
 
@@ -239,7 +240,7 @@ THREE.ColladaExporter.prototype = {
 		// Recursively process the object into a scene
 		function processObject( o ) {
 
-			var node = `<node name="${ child.name }">`;
+			var node = `<node name="${ o.name }">`;
 
 			node += getTransform( o );
 
