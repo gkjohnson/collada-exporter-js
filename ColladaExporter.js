@@ -230,13 +230,9 @@ THREE.ColladaExporter.prototype = {
 
 				matid = `Mat${ libraryEffects.length + 1 }`;
 
-				var type = 'basic';
-
-				if ( m instanceof THREE.MeshPhongMaterial ) {
-
-					type = 'phong';
-
-				} else if ( m instanceof THREE.MeshLambertMaterial ) {
+				var type = 'phong';
+				
+				if ( m instanceof THREE.MeshLambertMaterial ) {
 
 					type = 'lambert';
 
@@ -254,7 +250,7 @@ THREE.ColladaExporter.prototype = {
 					'';
 
 				var effectnode =
-					`<effect id="${ matid }">` +
+					`<effect id="${ matid }-effect">` +
 					'<profile_COMMON><technique>' +
 
 					`<${ type }>` +
@@ -348,7 +344,7 @@ THREE.ColladaExporter.prototype = {
 			'<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
 			`<created>${ ( new Date() ).toISOString() }</created>` +
 			`<modified>${ ( new Date() ).toISOString() }</modified>` +
-			'<revision>1.0</revison>' +
+			'<revision>1.0</revision>' +
 			'<up_axis>Z_UP</up_axis>' +
 			'</asset>';
 
@@ -360,7 +356,7 @@ THREE.ColladaExporter.prototype = {
 
 		res += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
 
-		res += `<library_visual_scenes><visual_scene id="defaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
+		res += `<library_visual_scenes><visual_scene id="DefaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
 
 		res += '<scene><instance_visual_scene url="#DefaultScene"/></scene>';
 
