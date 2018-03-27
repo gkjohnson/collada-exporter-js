@@ -15,303 +15,303 @@ THREE.ColladaExporter = function () {};
 
 THREE.ColladaExporter.prototype = {
 
-    constructor: THREE.ColladaExporter,
+	constructor: THREE.ColladaExporter,
 
-    parse: function ( object ) {
+	parse: function ( object ) {
 
-        // Convert the urdf xml into a well-formatted, indented format
-        function format( urdf ) {
+		// Convert the urdf xml into a well-formatted, indented format
+		function format( urdf ) {
 
-            const IS_END_TAG = /^<\//;
-            const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
-            const pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
+			const IS_END_TAG = /^<\//;
+			const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
+			const pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
 
-            let tagnum = 0;
-            return urdf
-                .match( /<[^>]+>/g )
-                .map( tag => {
+			let tagnum = 0;
+			return urdf
+				.match( /<[^>]+>/g )
+				.map( tag => {
 
-                    if ( ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
+					if ( ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
 
-                        tagnum --;
+						tagnum --;
 
-                    }
+					}
 
-                    const res = `${pad( '  ', tagnum )}${tag}`;
+					const res = `${pad( '  ', tagnum )}${tag}`;
 
-                    if ( ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
+					if ( ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
 
-                        tagnum ++;
+						tagnum ++;
 
-                    }
+					}
 
-                    return res;
+					return res;
 
-                } )
-                .join( '\n' );
+				} )
+				.join( '\n' );
 
-        }
+		}
 
-        // Returns the string for a geometry's attribute
-        function getAttribute( attr, name, params, type ) {
+		// Returns the string for a geometry's attribute
+		function getAttribute( attr, name, params, type ) {
 
-            var res =
-                    `<source id="${ name }"><float_array id="${ name }-array">` +
-                    attr.positions.array.join( ' ' ) +
-                    '</float_array>' +
-                    `<technique_common><accessor source="${ name }-array" count="${ attr.positions.array.length }" stride="3">` +
+			var res =
+					`<source id="${ name }"><float_array id="${ name }-array">` +
+					attr.positions.array.join( ' ' ) +
+					'</float_array>' +
+					`<technique_common><accessor source="${ name }-array" count="${ attr.positions.array.length }" stride="3">` +
 
-                    params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
+					params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
 
-                    '</technique_common></source>';
+					'</technique_common></source>';
 
-            return res;
+			return res;
 
-        }
+		}
 
-        // Returns the string for a node's transform information
-        function getTransform( o ) {
+		// Returns the string for a node's transform information
+		function getTransform( o ) {
 
-            var position = o.position;
-            var rotation = o.rotation;
-            var scale = o.scale;
+			var position = o.position;
+			var rotation = o.rotation;
+			var scale = o.scale;
 
-            var xvec = new THREE.Vector3();
-            var yvec = new THREE.Vector3();
-            var zvec = new THREE.Vector3();
+			var xvec = new THREE.Vector3();
+			var yvec = new THREE.Vector3();
+			var zvec = new THREE.Vector3();
 
-            ( new Matrix4() )
-                .compose( new THREE.Vector3( 0, 0, 0 ), rot, new THREE.Vector3( 1, 1, 1 ) )
-                .extractBasis( xvec, yvec, zvec );
+			( new Matrix4() )
+				.compose( new THREE.Vector3( 0, 0, 0 ), rot, new THREE.Vector3( 1, 1, 1 ) )
+				.extractBasis( xvec, yvec, zvec );
 
-            var res =
-                `<translate>${ o.position.x } ${ o.position.y } ${ o.position.z }</translate>` +
-                `<rotation>${ xvec.x } ${ xvec.y } ${ xvec.z }</rotation>` +
-                `<rotation>${ yvec.x } ${ yvec.y } ${ yvec.z }</rotation>` +
-                `<rotation>${ zvec.x } ${ zvec.y } ${ zvec.z }</rotation>` +
-                `<scale>${ o.scale.x } ${ o.scale.y } ${ o.scale.z }</scale>`;
+			var res =
+				`<translate>${ o.position.x } ${ o.position.y } ${ o.position.z }</translate>` +
+				`<rotation>${ xvec.x } ${ xvec.y } ${ xvec.z }</rotation>` +
+				`<rotation>${ yvec.x } ${ yvec.y } ${ yvec.z }</rotation>` +
+				`<rotation>${ zvec.x } ${ zvec.y } ${ zvec.z }</rotation>` +
+				`<scale>${ o.scale.x } ${ o.scale.y } ${ o.scale.z }</scale>`;
 
-        }
+		}
 
-        // Process the given piece of geometry into the geometry library
-        // Returns the mesh id
-        function processGeometry( g ) {
+		// Process the given piece of geometry into the geometry library
+		// Returns the mesh id
+		function processGeometry( g ) {
 
-            var meshid = geometryMap.get( geometry );
+			var meshid = geometryMap.get( geometry );
 
-            if ( meshid == null ) {
+			if ( meshid == null ) {
 
-                meshid = `Mesh${ libraryGeometries.length + 1 }`;
+				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
-                var polylistchildren = '';
-                var gnode = `<geometry id="${ meshid }"><mesh>`;
+				var polylistchildren = '';
+				var gnode = `<geometry id="${ meshid }"><mesh>`;
 
-                gnode += getAttribute( g.attributes.position, `${ meshid }-position`, [ 'X', 'Y', 'Z' ], 'float' );
+				gnode += getAttribute( g.attributes.position, `${ meshid }-position`, [ 'X', 'Y', 'Z' ], 'float' );
 
-                if ( 'normal' in g.attributes ) {
+				if ( 'normal' in g.attributes ) {
 
-                    gnode += getAttribute( g.attributes.normal, `${ meshid }-normal`, [ 'X', 'Y', 'Z' ], 'float' );
-                    polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
+					gnode += getAttribute( g.attributes.normal, `${ meshid }-normal`, [ 'X', 'Y', 'Z' ], 'float' );
+					polylistchildren += `<input semantic="NORMAL" source="#${ meshid }-normal" />`;
 
-}
+				}
 
-                if ( 'color' in g.attributes ) {
+				if ( 'color' in g.attributes ) {
 
-                    gnode += getAttribute( g.attributes.color, `${ meshid }-color`, [ 'X', 'Y', 'Z' ], 'uint8' );
-                    polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
+					gnode += getAttribute( g.attributes.color, `${ meshid }-color`, [ 'X', 'Y', 'Z' ], 'uint8' );
+					polylistchildren += `<input semantic="COLOR" source="#${ meshid }-color" />`;
 
-}
+				}
 
-                gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
+				gnode += `<vertices id="${ meshid }-vertices"><input semantic="POSITION" source="#${ meshid }-position" /></vertices>`;
 
 
-                if ( g.indices ) {
+				if ( g.indices ) {
 
-                    var polycount = g.attributes.position.length / 3;
-                    gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-                    gnode += polylistchildren;
+					var polycount = g.attributes.position.length / 3;
+					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
+					gnode += polylistchildren;
 
-                    gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-                    gnode += `<p>${ g.attributes.position.array.map( ( v, i ) => i ).join( ' ' ) }</p>`;
+					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+					gnode += `<p>${ g.attributes.position.array.map( ( v, i ) => i ).join( ' ' ) }</p>`;
 
-                } else {
+				} else {
 
-                    var polycount = g.indices.length / 3;
-                    gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
-                    gnode += polylistchildren;
+					var polycount = g.indices.length / 3;
+					gnode += `<polylist material="MESH_MATERIAL" count="${ polycount }">`;
+					gnode += polylistchildren;
 
-                    gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-                    gnode += `<p>${ g.indices.array.join( ' ' ) }</p>`;
+					gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+					gnode += `<p>${ g.indices.array.join( ' ' ) }</p>`;
 
-                }
+				}
 
-                gnode += `</mesh></geometry>`;
+				gnode += `</mesh></geometry>`;
 
-                libraryGeometries.push( gnode );
-                geometryMap.set( geometry, meshid );
+				libraryGeometries.push( gnode );
+				geometryMap.set( geometry, meshid );
 
-            }
+			}
 
-            return meshid;
+			return meshid;
 
-        }
+		}
 
-        // Process the given texture into the image library
-        // Returns the image library
-        function processTexture( tex ) {
+		// Process the given texture into the image library
+		// Returns the image library
+		function processTexture( tex ) {
 
-            // ...
+			// ...
 
-        }
+		}
 
-        // Process the given material into the material and effect libraries
-        // Returns the material id
-        function processMaterial( m ) {
+		// Process the given material into the material and effect libraries
+		// Returns the material id
+		function processMaterial( m ) {
 
-            // TODO: Process images into the image libraries
+			// TODO: Process images into the image libraries
 
-            var matid = materialMap.get( m );
+			var matid = materialMap.get( m );
 
-            if ( matid == null ) {
+			if ( matid == null ) {
 
-                matid = `Mat${ libraryEffects.length + 1 }`;
+				matid = `Mat${ libraryEffects.length + 1 }`;
 
-                var type = 'basic';
+				var type = 'basic';
 
-                if ( m instanceof THREE.MeshPhongMaterial ) {
+				if ( m instanceof THREE.MeshPhongMaterial ) {
 
-                    type = 'phong';
+					type = 'phong';
 
-                } else if ( m instanceof THREE.MeshLambertMaterial ) {
+				} else if ( m instanceof THREE.MeshLambertMaterial ) {
 
-                    type = 'lambert';
+					type = 'lambert';
 
-                }
+				}
 
-                var emissive = m.emissive ? m.emissive : new THREE.Color( 0, 0, 0 );
-                var diffuse = m.color ? m.color : new THREE.Color( 0, 0, 0 );
-                var ambient = m.ambient ? m.ambient : new THREE.Color( 0, 0, 0 );
-                var specular = m.specular ? m.specular : new THREE.Color( 1, 1, 1 );
-                var shininess = m.shininess || 0;
-                var reflectivity = m.reflectivity || 0;
+				var emissive = m.emissive ? m.emissive : new THREE.Color( 0, 0, 0 );
+				var diffuse = m.color ? m.color : new THREE.Color( 0, 0, 0 );
+				var ambient = m.ambient ? m.ambient : new THREE.Color( 0, 0, 0 );
+				var specular = m.specular ? m.specular : new THREE.Color( 1, 1, 1 );
+				var shininess = m.shininess || 0;
+				var reflectivity = m.reflectivity || 0;
 
-                var transparencyNode = m.opacity < 1.0 ?
-                    '<transparent><float>1</float></transparent>' +
-                    `<transparency><float>${ m.opacity }</float></transparency>` :
-                    '';
+				var transparencyNode = m.opacity < 1.0 ?
+					'<transparent><float>1</float></transparent>' +
+					`<transparency><float>${ m.opacity }</float></transparency>` :
+					'';
 
-                var effectnode =
-                    `<effect id="${ matid }">` +
-                    '<profile_COMMON><technique>' +
+				var effectnode =
+					`<effect id="${ matid }">` +
+					'<profile_COMMON><technique>' +
 
-                    `<${ type }>` +
+					`<${ type }>` +
 
-                    `<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b }</color></emission>` +
+					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b }</color></emission>` +
 
-                    `<diffuse><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></diffuse>` +
+					`<diffuse><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></diffuse>` +
 
-                    `<specular><color>${ specular.r } ${ specular.g } ${ specular.b }</color></specular>` +
+					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b }</color></specular>` +
 
-                    `<shininess><float>${ shininess }</float></shininess>` +
+					`<shininess><float>${ shininess }</float></shininess>` +
 
-                    `<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></reflective>` +
+					`<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></reflective>` +
 
-                    `<reflectivity><float>${ reflectivity }</float></reflectivity>` +
+					`<reflectivity><float>${ reflectivity }</float></reflectivity>` +
 
-                    transparencyNode +
+					transparencyNode +
 
-                    `</${ type }>` +
+					`</${ type }>` +
 
-                    '</technique></profile_COMMON>' +
-                    '</effect>';
+					'</technique></profile_COMMON>' +
+					'</effect>';
 
 
-                libraryMaterials.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
-                libraryEffects.push( effectnode );
-                materialMap.set( material, `${ matid }-effect` );
+				libraryMaterials.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
+				libraryEffects.push( effectnode );
+				materialMap.set( material, `${ matid }-effect` );
 
-            }
+			}
 
-            return matid;
+			return matid;
 
-        }
+		}
 
-        // Recursively process the object into a scene
-        function processObject( o ) {
+		// Recursively process the object into a scene
+		function processObject( o ) {
 
-            var node = `<node name="${ child.name }">`;
+			var node = `<node name="${ child.name }">`;
 
-            node += getTransform( o );
+			node += getTransform( o );
 
-            if ( o instanceof THREE.Mesh && o.geometry != null ) {
+			if ( o instanceof THREE.Mesh && o.geometry != null ) {
 
-                var meshid = processGeometry( o.geometry, meshid );
+				var meshid = processGeometry( o.geometry, meshid );
 
-                var matid = null;
+				var matid = null;
 
-                if ( o.material != null ) {
+				if ( o.material != null ) {
 
-                    matid = processMaterial( o.material );
+					matid = processMaterial( o.material );
 
-                }
+				}
 
-                node +=
-                    `<instance_geometry url="#${ meshid }">` +
+				node +=
+					`<instance_geometry url="#${ meshid }">` +
 
-                    (
-                        matid != null ?
-                            '<bind_material><technique_common>' +
-                            `<instance_material symbol="MESH_MATERIAL" target="#${ matid }" />` +
-                            '</technique_common></bind_material>' :
-                            ''
-                    ) +
+					(
+						matid != null ?
+							'<bind_material><technique_common>' +
+							`<instance_material symbol="MESH_MATERIAL" target="#${ matid }" />` +
+							'</technique_common></bind_material>' :
+							''
+					) +
 
-                    '</instance_geometry>';
+					'</instance_geometry>';
 
-            }
+			}
 
-            o.children.forEach( c => node += processObject( c ) );
+			o.children.forEach( c => node += processObject( c ) );
 
-            node += '</node>';
+			node += '</node>';
 
-        }
+		}
 
-        var geometryMap = new WeakMap();
-        var materialMap = new WeakMap();
-        var imageMap = new WeakMap();
-        var libraryImages = [];
-        var libraryGeometries = [];
-        var libraryEffects = [];
-        var libraryMaterials = [];
-        var libraryVisualScenes = processObject( object );
+		var geometryMap = new WeakMap();
+		var materialMap = new WeakMap();
+		var imageMap = new WeakMap();
+		var libraryImages = [];
+		var libraryGeometries = [];
+		var libraryEffects = [];
+		var libraryMaterials = [];
+		var libraryVisualScenes = processObject( object );
 
-        var res =
-            '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
-            '<COLLADA xmlns="https://www.khronos.org/collada/" version="1.5.0">' +
-            '<asset>' +
-            '<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
-            `<created>${ ( new Date() ).toISOString() }</created>` +
-            `<modified>${ ( new Date() ).toISOString() }</modified>` +
-            '<revision>1.0</revison>' +
-            '<up_axis>Z_UP</up_axis>' +
-            '</asset>';
+		var res =
+			'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
+			'<COLLADA xmlns="https://www.khronos.org/collada/" version="1.5.0">' +
+			'<asset>' +
+			'<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
+			`<created>${ ( new Date() ).toISOString() }</created>` +
+			`<modified>${ ( new Date() ).toISOString() }</modified>` +
+			'<revision>1.0</revison>' +
+			'<up_axis>Z_UP</up_axis>' +
+			'</asset>';
 
-        // include <library_images>
+		// include <library_images>
 
-        res += `<library_effects>${ libraryEffects.join( '' ) }</library_effects>`;
+		res += `<library_effects>${ libraryEffects.join( '' ) }</library_effects>`;
 
-        res += `<library_materials>${ libraryMaterials.join( '' ) }</library_materials>`;
+		res += `<library_materials>${ libraryMaterials.join( '' ) }</library_materials>`;
 
-        res += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
+		res += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
 
-        res += `<library_visual_scenes><visual_scene id="defaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
+		res += `<library_visual_scenes><visual_scene id="defaultScene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
 
-        res += '<scene><instance_visual_scene url="#DefaultScene"/></scene>';
+		res += '<scene><instance_visual_scene url="#DefaultScene"/></scene>';
 
-        res += '</COLLADA>';
+		res += '</COLLADA>';
 
-        return format( res );
+		return format( res );
 
-    }
+	}
 
 };
