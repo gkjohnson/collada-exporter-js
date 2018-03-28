@@ -38,7 +38,7 @@ THREE.ColladaExporter.prototype = {
 
 					}
 
-					const res = `${pad( '  ', tagnum )}${tag}`;
+					const res = `${ pad( '  ', tagnum ) }${ tag }`;
 
 					if ( IS_TAG.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
 
@@ -240,7 +240,8 @@ THREE.ColladaExporter.prototype = {
 				imageNode += `<init_from>${ name }.${ ext }</init_from>`;
 				imageNode += '</image>';
 
-				libraryImages.push( `<material id="${ matid }"><instance_effect url="#${ matid }-effect" /></material>` );
+
+				libraryImages.push( imageNode );
 				imageMap.set( tex.image, texid );
 				textures.push({
 					name,
@@ -289,15 +290,19 @@ THREE.ColladaExporter.prototype = {
 					`<transparency><float>${ m.opacity }</float></transparency>` :
 					'';
 
-				var effectnode =
-					`<effect id="${ matid }-effect">` +
-					'<profile_COMMON><technique>' +
-
-					`<${ type }>` +
+				var techniqueNode = `<technique><${ type }>` +
 
 					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b }</color></emission>` +
 
-					`<diffuse><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></diffuse>` +
+					'<diffuse>' +
+					
+					(
+						m.map ? 
+						`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
+						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color>` +
+					) +
+
+					'</diffuse>' +
 
 					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b }</color></specular>` +
 
@@ -309,9 +314,24 @@ THREE.ColladaExporter.prototype = {
 
 					transparencyNode +
 
-					`</${ type }>` +
+					`</${ type }></technique>`;
 
-					'</technique></profile_COMMON>' +
+				var effectnode =
+					`<effect id="${ matid }-effect">` +
+					'<profile_COMMON>' +
+
+					(
+						m.map ?
+						'<newparam sid="diffuse-surface"><surface type="2D">' +
+						`<init_from>${ processTexture( m.map ) }</init_from>` +
+						'</surface></newparam>' +
+						'<newparam sid="diffuse-sampler><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
+						''
+					)
+
+					techniqueNode +
+
+					'</profile_COMMON>' +
 					'</effect>';
 
 
@@ -351,7 +371,13 @@ THREE.ColladaExporter.prototype = {
 						matids != null ?
 							matids.map( ( id, i ) =>
 								'<bind_material><technique_common>' +
-								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" />` +
+								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" >` +
+
+								// TODO: This isn't needed in all cases. processMaterial could return more information
+								// so this can be properly conditional
+								'<bind_vertex_input semantic="TEXCOORD" input_semantic="TEXCOORD" input_set="0" />' +
+								
+								'</instance_material>' +
 								'</technique_common></bind_material>'
 							).join( '' ) :
 							''
