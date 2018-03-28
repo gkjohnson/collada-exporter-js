@@ -28,6 +28,8 @@ Converts the provided object tree into a collada file and associated textures. R
 
 - Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included.
 - Only `phong` (default), `lambert`, and `constant` material tags are supported.
+- Only diffuse texture maps are support for export.
+- Only diffuse texture maps cannot be exported with a tint color (per the spec).
 
 ## Resources
 [DAE Format Specification](https://www.khronos.org/collada/)
