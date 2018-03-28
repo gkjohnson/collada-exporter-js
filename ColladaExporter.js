@@ -58,7 +58,7 @@ THREE.ColladaExporter.prototype = {
 		function imageToData( image, ext ) {
 
 			canvas = canvas || document.createElement( 'canvas' );
-			ctx = ctx || canvas.getContext( '2D' );
+			ctx = ctx || canvas.getContext( '2d' );
 
 			canvas.width = image.naturalWidth;
 			canvas.height = image.naturalHeight;
@@ -232,10 +232,10 @@ THREE.ColladaExporter.prototype = {
 			var texid = imageMap.get( tex.image );
 			if ( texid == null ) {
 				
-				matid = `Image${ libraryImages.length + 1 }`;
+				texid = `Image${ libraryImages.length + 1 }`;
 
 				var ext = 'png';
-				var name = tex.name || matid;
+				var name = tex.name || texid;
 				var imageNode = `<image id="${ texid }" name="${ name }">`;
 				imageNode += `<init_from>${ name }.${ ext }</init_from>`;
 				imageNode += '</image>';
@@ -327,13 +327,12 @@ THREE.ColladaExporter.prototype = {
 						'</surface></newparam>' +
 						'<newparam sid="diffuse-sampler><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
 						''
-					)
+					) +
 
 					techniqueNode +
 
 					'</profile_COMMON>' +
 					'</effect>';
-
 
 				libraryMaterials.push( `<material id="${ matid }" name="${ m.name }"><instance_effect url="#${ matid }-effect" /></material>` );
 				libraryEffects.push( effectnode );
