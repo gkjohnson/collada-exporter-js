@@ -258,9 +258,6 @@ THREE.ColladaExporter.prototype = {
 		// Returns the material id
 		function processMaterial( m ) {
 
-			// TODO: Process images into the image libraries
-			// TODO: Process all images including specular, etc
-
 			var matid = materialMap.get( m );
 
 			if ( matid == null ) {
@@ -413,7 +410,7 @@ THREE.ColladaExporter.prototype = {
 			`<created>${ ( new Date() ).toISOString() }</created>` +
 			`<modified>${ ( new Date() ).toISOString() }</modified>` +
 			'<revision>1.0</revision>' +
-			'<up_axis>Z_UP</up_axis>' +
+			'<up_axis>Y_UP</up_axis>' +
 			'</asset>';
 
 		// include <library_images>
