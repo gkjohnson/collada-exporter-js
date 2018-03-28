@@ -299,7 +299,7 @@ THREE.ColladaExporter.prototype = {
 					(
 						m.map ? 
 						`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
-						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color>` +
+						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color>`
 					) +
 
 					'</diffuse>' +
