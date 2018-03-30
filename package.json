@@ -1,8 +1,8 @@
 {
-  "name": "collada-exporter-js",
-  "version": "1.0.0",
+  "name": "collada-exporter",
+  "version": "0.0.1",
   "description": "Collada / DAE Format exporter for THREE js geometry.",
-  "main": "index.js",
+  "main": "ColladaExporter.js",
   "scripts": {
     "start": "static-server"
   },
@@ -10,12 +10,27 @@
     "type": "git",
     "url": "git+https://github.com/gkjohnson/collada-exporter-js.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Garrett Johnson <garrett.kjohnson@gmail.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/gkjohnson/collada-exporter-js/issues"
   },
   "homepage": "https://github.com/gkjohnson/collada-exporter-js#readme",
+  "keywords": [
+    "threejs",
+    "three-js",
+    "graphics",
+    "model",
+    "geometry",
+    "collada",
+    "dae",
+    "export",
+    "exporter",
+    "javascript"
+  ],
+  "peerDependencies": {
+    "three": "^0.91.0"
+  },
   "devDependencies": {
     "jszip": "^3.1.5",
     "static-server": "^2.2.0",
