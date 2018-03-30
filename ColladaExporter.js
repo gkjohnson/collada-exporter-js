@@ -54,6 +54,21 @@ THREE.ColladaExporter.prototype = {
 		}
 
 		// Convert an image into a png format for saving
+		function base64ToBuffer( str ) {
+
+			var b = atob( str );
+			var buf = new Uint8Array( b.length );
+
+			for ( var i = 0, l = buf.length; i < l; i ++ ) {
+
+				buf[ i ] = b.charCodeAt( i );
+
+			}
+
+			return buf;
+
+		}
+
 		var canvas, ctx;
 		function imageToData( image, ext ) {
 
@@ -65,9 +80,13 @@ THREE.ColladaExporter.prototype = {
 
 			ctx.drawImage( image, 0, 0 );
 
-			return canvas
-				.toDataURL( `image/${ ext }`, 1 )
-				.replace( /^data:image\/(png|jpg);base64,/, '' );
+			// Get the base64 encoded data
+			var base64data = canvas
+						.toDataURL( `image/${ ext }`, 1 )
+						.replace( /^data:image\/(png|jpg);base64,/, '' );
+
+			// Convert to a uint8 array
+			return base64ToBuffer( base64data );
 
 		}
 
