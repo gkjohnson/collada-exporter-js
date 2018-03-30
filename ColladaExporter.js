@@ -269,7 +269,7 @@ THREE.ColladaExporter.prototype = {
 			var texid = imageMap.get( tex.image );
 			if ( texid == null ) {
 				
-				texid = `Image${ libraryImages.length + 1 }`;
+				texid = `image-${ libraryImages.length + 1 }`;
 
 				var ext = 'png';
 				var name = tex.name || texid;
