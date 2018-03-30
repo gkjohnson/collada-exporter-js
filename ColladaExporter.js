@@ -272,7 +272,7 @@ THREE.ColladaExporter.prototype = {
 				var ext = 'png';
 				var name = tex.name || texid;
 				var imageNode = `<image id="${ texid }" name="${ name }">`;
-				imageNode += `<init_from>${ name }.${ ext }</init_from>`;
+				imageNode += `<init_from><ref>${ name }.${ ext }</ref></init_from>`;
 				imageNode += '</image>';
 
 
