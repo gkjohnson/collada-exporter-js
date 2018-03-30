@@ -95,24 +95,29 @@ THREE.ColladaExporter.prototype = {
 		// and `ct` length
 		function subArray( arr, st, ct ) {
 
-			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, Math.min( arr.length, ct ) );
+			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, ct );
 
 		}
 
 		// Returns the string for a geometry's attribute
-		function getAttribute( attr, name, params, type, group ) {
+		function getAttribute( attr, name, params, type ) {
 
-			var arr = subArray( attr.array, group.start, group.count );
-
+			var array = attr.array;
 			var res =
-					`<source id="${ name }"><float_array id="${ name }-array" count="${ arr.length }">` +
-					arr.join( ' ' ) +
+					`<source id="${ name }">` +
+
+					`<float_array id="${ name }-array" count="${ array.length }">` +
+					array.join( ' ' ) +
 					'</float_array>' +
-					`<technique_common><accessor source="#${ name }-array" count="${ Math.floor( arr.length / attr.itemSize ) }" stride="${ attr.itemSize }">` +
+
+					'<technique_common>' +
+					`<accessor source="#${ name }-array" count="${ Math.floor( array.length / attr.itemSize ) }" stride="${ attr.itemSize }">` +
 
 					params.map( n => `<param name="${ n }" type="${ type }" />` ).join( '' ) +
 
-					'</accessor></technique_common></source>';
+					'</accessor>' +
+					'</technique_common>' +
+					'</source>';
 
 			return res;
 
@@ -165,47 +170,58 @@ THREE.ColladaExporter.prototype = {
 
 				meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
-				var groups = processGeom.groups != null && processGeom.groups.length !== 0 ? processGeom.groups : [ { start: 0, count: Infinity, materialIndex: 0 } ];
+				var indexCount =
+					processGeom.index ?
+					processGeom.index.array.length :
+					processGeom.attributes.position.count;
+
+				var groups =
+					processGeom.groups != null && processGeom.groups.length !== 0 ?
+					processGeom.groups :
+					[ { start: 0, count: indexCount, materialIndex: 0 } ];
 
 				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
+
+				var polylistchildren = '';
+
+				// positions
+				var posName = `${ meshid }-position-${ i }`;
+				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
+
+				// serialize normals
+				if ( 'normal' in processGeom.attributes ) {
+
+					var normName = `${ meshid }-normal-${ i }`;
+					gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
+					polylistchildren += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
+
+				}
+
+				// serialize uvs
+				if ( 'uv' in processGeom.attributes ) {
+
+					var uvName = `${ meshid }-texcoord-${ i }`;
+					gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
+					polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
+
+				}
+
+				// serialize colors
+				if ( 'color' in processGeom.attributes ) {
+
+					var colName = `${ meshid }-color-${ i }`;
+					gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
+					polylistchildren += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
+
+				}
+
+				var vertName = `${ meshid }-vertices-${ i }`;
+				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
+				polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
+
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
 					var group = groups[ i ];
-					var polylistchildren = '';
-
-					var posName = `${ meshid }-position-${ i }`;
-					gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float', group );
-
-					// serialize normals
-					if ( 'normal' in processGeom.attributes ) {
-
-						var normName = `${ meshid }-normal-${ i }`;
-						gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float', group );
-						polylistchildren += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
-
-					}
-
-					// serialize uvs
-					if ( 'uv' in processGeom.attributes ) {
-
-						var uvName = `${ meshid }-texcoord-${ i }`;
-						gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float', group );
-						polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
-
-					}
-
-					// serialize colors
-					if ( 'color' in processGeom.attributes ) {
-
-						var colName = `${ meshid }-color-${ i }`;
-						gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8', group );
-						polylistchildren += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
-
-					}
-
-					var vertName = `${ meshid }-vertices-${ i }`;
-					gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
-					polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 
 					if ( processGeom.index != null ) {
 
@@ -220,14 +236,15 @@ THREE.ColladaExporter.prototype = {
 
 					} else {
 
-						var subarr = subArray( processGeom.attributes.position.array, group.start, group.count );
-						var polycount = subarr.length / 3;
+						// var subarr = subArray( processGeom.attributes.position.array, group.start, group.count );
+						// var indexct = processGeom.attributes.position.array.length / processGeom.attributes.position.itemSize;
+						var polycount = group.count / 3;
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
 
 						// The "vcount" tag seems to be optional
 						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
+						gnode += `<p>${ ( new Array( group.count ) ).fill().map( ( v, i ) => i + group.start ).join( ' ' ) }</p>`;
 						gnode += '</polylist>';
 
 					}
