@@ -17,7 +17,7 @@ THREE.ColladaExporter.prototype = {
 
 	constructor: THREE.ColladaExporter,
 
-	parse: function ( object ) {
+	parse: function( object ) {
 
 		// Convert the urdf xml into a well-formatted, indented format
 		function format( urdf ) {
