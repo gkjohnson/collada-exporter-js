@@ -1,5 +1,7 @@
 # collada-exporter-js
 
+[![npm version](https://badge.fury.io/js/collada-exporter.svg)](https://www.npmjs.com/package/collada-exporter)
+
 Collada / DAE Format exporter for THREE js geometry. The format is described [here](https://www.khronos.org/collada/).
 
 ## Use
