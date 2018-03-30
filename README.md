@@ -32,3 +32,4 @@ Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format 
 - Only `phong` (default), `lambert`, and `constant` material tags are supported.
 - Only diffuse texture maps are support for export.
 - Only diffuse texture maps cannot be exported with a tint color (per the spec).
+- MeshLab seems to have problems importing textures or mapping the materials ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/3)).
