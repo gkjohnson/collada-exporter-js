@@ -24,16 +24,13 @@ var { data, textures } = exporter.parse(mesh);
 
 Converts the provided object tree into a collada file and associated textures. Returns on object with the `dae` file data in `data` and the textures in an array with a name in data in `textures`.
 
+#### ColladaArchiveExporter.parse(object, onComplete)
+
+Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format to align with the `zae` Collada format. Requires the ColladaExporter and JSZip.
+
 ## Limitations
 
 - Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included.
 - Only `phong` (default), `lambert`, and `constant` material tags are supported.
 - Only diffuse texture maps are support for export.
 - Only diffuse texture maps cannot be exported with a tint color (per the spec).
-
-## Resources
-[DAE Format Specification](https://www.khronos.org/collada/)
-
-[Example Cube DAE Model](http://gis.zcu.cz/projekty/3DGIS/HelloCube/DAE/dae.html)
-
-[Example Elf DAE Model](https://github.com/mrdoob/three.js/tree/dev/examples/models/collada/elf)
