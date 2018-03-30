@@ -185,13 +185,13 @@ THREE.ColladaExporter.prototype = {
 				var polylistchildren = '';
 
 				// positions
-				var posName = `${ meshid }-position-${ i }`;
+				var posName = `${ meshid }-position`;
 				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
 
 				// serialize normals
 				if ( 'normal' in processGeom.attributes ) {
 
-					var normName = `${ meshid }-normal-${ i }`;
+					var normName = `${ meshid }-normal`;
 					gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
 					polylistchildren += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
 
@@ -200,7 +200,7 @@ THREE.ColladaExporter.prototype = {
 				// serialize uvs
 				if ( 'uv' in processGeom.attributes ) {
 
-					var uvName = `${ meshid }-texcoord-${ i }`;
+					var uvName = `${ meshid }-texcoord`;
 					gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
 					polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
 
@@ -209,13 +209,13 @@ THREE.ColladaExporter.prototype = {
 				// serialize colors
 				if ( 'color' in processGeom.attributes ) {
 
-					var colName = `${ meshid }-color-${ i }`;
+					var colName = `${ meshid }-color`;
 					gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
 					polylistchildren += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
 
 				}
 
-				var vertName = `${ meshid }-vertices-${ i }`;
+				var vertName = `${ meshid }-vertices`;
 				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
 				polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 
@@ -236,8 +236,6 @@ THREE.ColladaExporter.prototype = {
 
 					} else {
 
-						// var subarr = subArray( processGeom.attributes.position.array, group.start, group.count );
-						// var indexct = processGeom.attributes.position.array.length / processGeom.attributes.position.itemSize;
 						var polycount = group.count / 3;
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
