@@ -24,15 +24,16 @@ THREE.ColladaExporter.prototype = {
 
 			const IS_END_TAG = /^<\//;
 			const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
-			const IS_TAG = /^<.*>$/;
+			const HAS_TEXT = /(<[^>]+>[^<]*<\/[^<]+>)/;
+
 			const pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
 
 			let tagnum = 0;
 			return urdf
-				.match( /(<[^>]+>)|([^<]*)/g )
+				.match( /(<[^>]+>[^<]+<\/[^<]+>)|(<[^>]+>)|(<[^>]+>)/g )
 				.map( tag => {
 
-					if ( IS_TAG.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
+					if ( ! HAS_TEXT.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
 
 						tagnum --;
 
@@ -40,7 +41,7 @@ THREE.ColladaExporter.prototype = {
 
 					const res = `${ pad( '  ', tagnum ) }${ tag }`;
 
-					if ( IS_TAG.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
+					if ( ! HAS_TEXT.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
 
 						tagnum ++;
 
@@ -213,7 +214,7 @@ THREE.ColladaExporter.prototype = {
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
 
-						gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
+						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
 						gnode += '</polylist>';
 
@@ -224,9 +225,9 @@ THREE.ColladaExporter.prototype = {
 						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += polylistchildren;
 
-						// The "vcount" and "p" tags seem to be optional
+						// The "vcount" tag seems to be optional
 						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
-						// gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
+						gnode += `<p>${ ( new Array( subarr.length ) ).fill().map( ( v, i ) => i ).join( ' ' ) }</p>`;
 						gnode += '</polylist>';
 
 					}
@@ -341,7 +342,7 @@ THREE.ColladaExporter.prototype = {
 						'<newparam sid="diffuse-surface"><surface type="2D">' +
 						`<init_from>${ processTexture( m.map ) }</init_from>` +
 						'</surface></newparam>' +
-						'<newparam sid="diffuse-sampler><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
+						'<newparam sid="diffuse-sampler"><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
 						''
 					) +
 
@@ -432,7 +433,7 @@ THREE.ColladaExporter.prototype = {
 			'<up_axis>Y_UP</up_axis>' +
 			'</asset>';
 
-		// include <library_images>
+		res += `<library_images>${ libraryImages.join( '' ) }</library_images>`;
 
 		res += `<library_effects>${ libraryEffects.join( '' ) }</library_effects>`;
 
