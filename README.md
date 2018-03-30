@@ -1,5 +1,3 @@
-**IN PROGRESS**
-
 # collada-exporter-js
 
 Collada / DAE Format exporter for THREE js geometry. The format is described [here](https://www.khronos.org/collada/).
