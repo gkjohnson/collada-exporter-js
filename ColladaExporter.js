@@ -182,18 +182,19 @@ THREE.ColladaExporter.prototype = {
 
 				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
 
-				var polylistchildren = '';
+				var vertexInputs = '';
 
 				// positions
 				var posName = `${ meshid }-position`;
 				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
+				vertexInputs += `<input semantic="POSITION" source="#${ posName }" />`;
 
 				// serialize normals
 				if ( 'normal' in processGeom.attributes ) {
 
 					var normName = `${ meshid }-normal`;
 					gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
-					polylistchildren += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
+					vertexInputs += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
 
 				}
 
@@ -202,7 +203,7 @@ THREE.ColladaExporter.prototype = {
 
 					var uvName = `${ meshid }-texcoord`;
 					gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
-					polylistchildren += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
+					vertexInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
 
 				}
 
@@ -211,13 +212,13 @@ THREE.ColladaExporter.prototype = {
 
 					var colName = `${ meshid }-color`;
 					gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
-					polylistchildren += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
+					vertexInputs += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
 
 				}
 
 				var vertName = `${ meshid }-vertices`;
-				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
-				polylistchildren += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
+				gnode += `<vertices id="${ vertName }">${ vertexInputs }</vertices>`;
+
 
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
@@ -227,23 +228,22 @@ THREE.ColladaExporter.prototype = {
 
 						var subarr = subArray( processGeom.index.array, group.start, group.count );
 						var polycount = subarr.length / 3;
-						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += polylistchildren;
+						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+						gnode += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 
 						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
-						gnode += '</polylist>';
+						gnode += '</triangles>';
 
 					} else {
 
 						var polycount = group.count / 3;
-						gnode += `<polylist material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += polylistchildren;
+						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+						gnode += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 
-						// The "vcount" tag seems to be optional
 						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ ( new Array( group.count ) ).fill().map( ( v, i ) => i + group.start ).join( ' ' ) }</p>`;
-						gnode += '</polylist>';
+						gnode += '</triangles>';
 
 					}
 
@@ -324,23 +324,23 @@ THREE.ColladaExporter.prototype = {
 
 				var techniqueNode = `<technique><${ type }>` +
 
-					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b }</color></emission>` +
+					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color></emission>` +
 
 					'<diffuse>' +
 					
 					(
 						m.map ? 
 						`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
-						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color>`
+						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
 					) +
 
 					'</diffuse>' +
 
-					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b }</color></specular>` +
+					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b } 1</color></specular>` +
 
 					`<shininess><float>${ shininess }</float></shininess>` +
 
-					`<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b }</color></reflective>` +
+					`<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color></reflective>` +
 
 					`<reflectivity><float>${ reflectivity }</float></reflectivity>` +
 
@@ -443,8 +443,6 @@ THREE.ColladaExporter.prototype = {
 			'<asset>' +
 			'<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
 			`<created>${ ( new Date() ).toISOString() }</created>` +
-			`<modified>${ ( new Date() ).toISOString() }</modified>` +
-			'<revision>1.0</revision>' +
 			'<up_axis>Y_UP</up_axis>' +
 			'</asset>';
 
