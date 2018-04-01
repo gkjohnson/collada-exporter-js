@@ -17,11 +17,11 @@ THREE.ColladaExporter.prototype = {
 
 	constructor: THREE.ColladaExporter,
 
-	parse: function( object, version = '1.4.1' ) {
+	parse: function ( object, version = '1.4.1' ) {
 
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
 
-			console.warn( `ColladaExporter : Version ${ version } not supported for export. Only 1.4.1 and 1.5.0.`);
+			console.warn( `ColladaExporter : Version ${ version } not supported for export. Only 1.4.1 and 1.5.0.` );
 			return null;
 
 		}
@@ -90,8 +90,8 @@ THREE.ColladaExporter.prototype = {
 
 			// Get the base64 encoded data
 			var base64data = canvas
-						.toDataURL( `image/${ ext }`, 1 )
-						.replace( /^data:image\/(png|jpg);base64,/, '' );
+				.toDataURL( `image/${ ext }`, 1 )
+				.replace( /^data:image\/(png|jpg);base64,/, '' );
 
 			// Convert to a uint8 array
 			return base64ToBuffer( base64data );
@@ -143,7 +143,7 @@ THREE.ColladaExporter.prototype = {
 			var yvec = new THREE.Vector3();
 			var zvec = new THREE.Vector3();
 
-			var rotmat = rotmat || new THREE.Matrix4();
+			rotmat = rotmat || new THREE.Matrix4();
 			rotmat
 				.makeRotationFromEuler( rotation )
 				.extractBasis( xvec, yvec, zvec );
@@ -179,13 +179,13 @@ THREE.ColladaExporter.prototype = {
 
 				var indexCount =
 					processGeom.index ?
-					processGeom.index.array.length :
-					processGeom.attributes.position.count;
+						processGeom.index.array.length :
+						processGeom.attributes.position.count;
 
 				var groups =
 					processGeom.groups != null && processGeom.groups.length !== 0 ?
-					processGeom.groups :
-					[ { start: 0, count: indexCount, materialIndex: 0 } ];
+						processGeom.groups :
+						[ { start: 0, count: indexCount, materialIndex: 0 } ];
 
 				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
 
@@ -273,7 +273,7 @@ THREE.ColladaExporter.prototype = {
 
 			var texid = imageMap.get( tex.image );
 			if ( texid == null ) {
-				
+
 				texid = `image-${ libraryImages.length + 1 }`;
 
 				var ext = 'png';
@@ -281,11 +281,11 @@ THREE.ColladaExporter.prototype = {
 				var imageNode = `<image id="${ texid }" name="${ name }">`;
 
 				if ( version === '1.5.0' ) {
-					
+
 					imageNode += `<init_from><ref>${ name }.${ ext }</ref></init_from>`;
-				
+
 				} else {
-					
+
 					// version image node 1.4.1
 					imageNode += `<init_from>${ name }.${ ext }</init_from>`;
 
@@ -296,15 +296,16 @@ THREE.ColladaExporter.prototype = {
 
 				libraryImages.push( imageNode );
 				imageMap.set( tex.image, texid );
-				textures.push({
+				textures.push( {
 					name,
 					ext,
 					data: imageToData( tex.image, ext )
-				})
+				} );
 
 			}
 
 			return texid;
+
 		}
 
 		// Process the given material into the material and effect libraries
@@ -345,11 +346,11 @@ THREE.ColladaExporter.prototype = {
 					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color></emission>` +
 
 					'<diffuse>' +
-					
+
 					(
-						m.map ? 
-						`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
-						`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
+						m.map ?
+							`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
+							`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
 					) +
 
 					'</diffuse>' +
@@ -372,11 +373,11 @@ THREE.ColladaExporter.prototype = {
 
 					(
 						m.map ?
-						'<newparam sid="diffuse-surface"><surface type="2D">' +
-						`<init_from>${ processTexture( m.map ) }</init_from>` +
-						'</surface></newparam>' +
-						'<newparam sid="diffuse-sampler"><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
-						''
+							'<newparam sid="diffuse-surface"><surface type="2D">' +
+							`<init_from>${ processTexture( m.map ) }</init_from>` +
+							'</surface></newparam>' +
+							'<newparam sid="diffuse-sampler"><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
+							''
 					) +
 
 					techniqueNode +
@@ -425,7 +426,7 @@ THREE.ColladaExporter.prototype = {
 								// TODO: This isn't needed in all cases. processMaterial could return more information
 								// so this can be properly conditional
 								'<bind_vertex_input semantic="TEXCOORD" input_semantic="TEXCOORD" input_set="0" />' +
-								
+
 								'</instance_material>' +
 								'</technique_common></bind_material>'
 							).join( '' ) :
