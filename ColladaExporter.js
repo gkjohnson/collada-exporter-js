@@ -17,7 +17,14 @@ THREE.ColladaExporter.prototype = {
 
 	constructor: THREE.ColladaExporter,
 
-	parse: function( object ) {
+	parse: function( object, version = '1.4.1' ) {
+
+		if ( version !== '1.4.1' && version !== '1.5.0' ) {
+
+			console.warn( `ColladaExporter : Version ${ version } not supported for export. Only 1.4.1 and 1.5.0.`);
+			return null;
+
+		}
 
 		// Convert the urdf xml into a well-formatted, indented format
 		function format( urdf ) {
@@ -272,7 +279,18 @@ THREE.ColladaExporter.prototype = {
 				var ext = 'png';
 				var name = tex.name || texid;
 				var imageNode = `<image id="${ texid }" name="${ name }">`;
-				imageNode += `<init_from><ref>${ name }.${ ext }</ref></init_from>`;
+
+				if ( version === '1.5.0' ) {
+					
+					imageNode += `<init_from><ref>${ name }.${ ext }</ref></init_from>`;
+				
+				} else {
+					
+					// version image node 1.4.1
+					imageNode += `<init_from>${ name }.${ ext }</init_from>`;
+
+				}
+
 				imageNode += '</image>';
 
 
@@ -439,7 +457,7 @@ THREE.ColladaExporter.prototype = {
 
 		var res =
 			'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
-			'<COLLADA xmlns="https://www.khronos.org/collada/" version="1.5.0">' +
+			`<COLLADA xmlns="https://www.khronos.org/collada/" version="${ version }">` +
 			'<asset>' +
 			'<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
 			`<created>${ ( new Date() ).toISOString() }</created>` +

@@ -33,7 +33,7 @@ THREE.ColladaArchiveExporter.prototype = {
 
         }
 
-        var files = ( new THREE.ColladaExporter() ).parse( object );
+        var files = ( new THREE.ColladaExporter() ).parse( object, '1.5.0' );
         var daename = `${ object.name || 'model' }.dae`;
         var manifest = 
             '<?xml version="1.0" encoding="utf-8"?>' +
