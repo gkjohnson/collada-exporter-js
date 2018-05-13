@@ -17,7 +17,7 @@ THREE.ColladaArchiveExporter.prototype = {
 
 	constructor: THREE.ColladaArchiveExporter,
 
-	parse: function ( object, onComplete ) {
+	parse: function ( object ) {
 
 		if ( THREE.ColladaExporter == null ) {
 
@@ -44,10 +44,8 @@ THREE.ColladaArchiveExporter.prototype = {
 		zip.file( daename, files.data );
 		files.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
 
-		zip
-			.generateAsync( { type: "uint8array" } )
-			.then( data => onComplete( data ) );
-
+		return zip.generate( { type: 'uint8array' } );
+		
 	}
 
 };
