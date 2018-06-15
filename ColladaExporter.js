@@ -19,9 +19,9 @@ THREE.ColladaExporter.prototype = {
 
 	parse: function ( object, options = {} ) {
 
-        options = Object.assign( { version: '1.4.1' }, options );
+		options = Object.assign( { version: '1.4.1' }, options );
 
-        var version = options.version;
+		var version = options.version;
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
 
 			console.warn( `ColladaExporter : Version ${ version } not supported for export. Only 1.4.1 and 1.5.0.` );
