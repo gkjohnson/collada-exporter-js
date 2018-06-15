@@ -17,7 +17,11 @@ THREE.ColladaExporter.prototype = {
 
 	constructor: THREE.ColladaExporter,
 
-	parse: function ( object, version = '1.4.1' ) {
+	parse: function ( object, options = {} ) {
+
+        options = Object.assign( { version: '1.4.1' }, options );
+
+        var version = options.version;
 
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
 
@@ -29,13 +33,13 @@ THREE.ColladaExporter.prototype = {
 		// Convert the urdf xml into a well-formatted, indented format
 		function format( urdf ) {
 
-			const IS_END_TAG = /^<\//;
-			const IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
-			const HAS_TEXT = /(<[^>]+>[^<]*<\/[^<]+>)/;
+			var IS_END_TAG = /^<\//;
+			var IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
+			var HAS_TEXT = /(<[^>]+>[^<]*<\/[^<]+>)/;
 
-			const pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
+			var pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
 
-			let tagnum = 0;
+			var tagnum = 0;
 			return urdf
 				.match( /(<[^>]+>[^<]+<\/[^<]+>)|(<[^>]+>)|(<[^>]+>)/g )
 				.map( tag => {
@@ -46,7 +50,7 @@ THREE.ColladaExporter.prototype = {
 
 					}
 
-					const res = `${ pad( '  ', tagnum ) }${ tag }`;
+					var res = `${ pad( '  ', tagnum ) }${ tag }`;
 
 					if ( ! HAS_TEXT.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && ! IS_END_TAG.test( tag ) ) {
 
