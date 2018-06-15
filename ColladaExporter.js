@@ -22,7 +22,6 @@ THREE.ColladaExporter.prototype = {
         options = Object.assign( { version: '1.4.1' }, options );
 
         var version = options.version;
-
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
 
 			console.warn( `ColladaExporter : Version ${ version } not supported for export. Only 1.4.1 and 1.5.0.` );
@@ -34,14 +33,14 @@ THREE.ColladaExporter.prototype = {
 		function format( urdf ) {
 
 			var IS_END_TAG = /^<\//;
-			var IS_SELF_CLOSING = /(^<\?)|(\/>$)/;
-			var HAS_TEXT = /(<[^>]+>[^<]*<\/[^<]+>)/;
+			var IS_SELF_CLOSING = /\/>$/;
+			var HAS_TEXT = /<[^>]+>[^<]*<\/[^<]+>/;
 
 			var pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
 
 			var tagnum = 0;
 			return urdf
-				.match( /(<[^>]+>[^<]+<\/[^<]+>)|(<[^>]+>)|(<[^>]+>)/g )
+				.match( /(<[^>]+>[^<]+<\/[^<]+>)|(<[^>]+>)/g )
 				.map( tag => {
 
 					if ( ! HAS_TEXT.test( tag ) && ! IS_SELF_CLOSING.test( tag ) && IS_END_TAG.test( tag ) ) {
@@ -141,7 +140,6 @@ THREE.ColladaExporter.prototype = {
 			var position = o.position;
 			var rotation = o.rotation;
 			var scale = o.scale;
-
 
 			var xvec = new THREE.Vector3();
 			var yvec = new THREE.Vector3();
