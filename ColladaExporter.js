@@ -191,19 +191,19 @@ THREE.ColladaExporter.prototype = {
 
 				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
 
-				var vertexInputs = '';
-
-				// positions
+				// define the geometry node and the vertices for the geometry
 				var posName = `${ meshid }-position`;
+				var vertName = `${ meshid }-vertices`;
 				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
-				vertexInputs += `<input semantic="POSITION" source="#${ posName }" />`;
+				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
 
 				// serialize normals
+				var triangleInputs = `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 				if ( 'normal' in processGeom.attributes ) {
 
 					var normName = `${ meshid }-normal`;
 					gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
-					vertexInputs += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
+					triangleInputs += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
 
 				}
 
@@ -212,7 +212,7 @@ THREE.ColladaExporter.prototype = {
 
 					var uvName = `${ meshid }-texcoord`;
 					gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
-					vertexInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" />`;
+					triangleInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" set="0" />`;
 
 				}
 
@@ -221,13 +221,9 @@ THREE.ColladaExporter.prototype = {
 
 					var colName = `${ meshid }-color`;
 					gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
-					vertexInputs += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
+					triangleInputs += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
 
 				}
-
-				var vertName = `${ meshid }-vertices`;
-				gnode += `<vertices id="${ vertName }">${ vertexInputs }</vertices>`;
-
 
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
@@ -238,9 +234,8 @@ THREE.ColladaExporter.prototype = {
 						var subarr = subArray( processGeom.index.array, group.start, group.count );
 						var polycount = subarr.length / 3;
 						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
+						gnode += triangleInputs;
 
-						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
 						gnode += '</triangles>';
 
@@ -248,9 +243,8 @@ THREE.ColladaExporter.prototype = {
 
 						var polycount = group.count / 3;
 						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
+						gnode += triangleInputs;
 
-						// gnode += `<vcount>${ ( new Array( polycount ) ).fill( 3 ).join( ' ' ) }</vcount>`;
 						gnode += `<p>${ ( new Array( group.count ) ).fill().map( ( v, i ) => i + group.start ).join( ' ' ) }</p>`;
 						gnode += '</triangles>';
 
@@ -421,17 +415,18 @@ THREE.ColladaExporter.prototype = {
 
 					(
 						matids != null ?
+							'<bind_material><technique_common>' +
 							matids.map( ( id, i ) =>
-								'<bind_material><technique_common>' +
+
 								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" >` +
 
 								// TODO: This isn't needed in all cases. processMaterial could return more information
 								// so this can be properly conditional
 								'<bind_vertex_input semantic="TEXCOORD" input_semantic="TEXCOORD" input_set="0" />' +
 
-								'</instance_material>' +
-								'</technique_common></bind_material>'
-							).join( '' ) :
+								'</instance_material>'
+							).join( '' ) +
+							'</technique_common></bind_material>' :
 							''
 					) +
 
