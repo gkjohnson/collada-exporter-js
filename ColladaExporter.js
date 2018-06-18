@@ -250,7 +250,12 @@ THREE.ColladaExporter.prototype = {
 						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
 						gnode += triangleInputs;
 
-						gnode += `<p>${ ( new Array( group.count ) ).fill().map( ( v, i ) => i + group.start ).join( ' ' ) }</p>`;
+						// Fill an index array mapping to incrementing triangle indices
+						var indexArray = new Array( group.count );
+						var groupStart = group.start;
+						for ( var j = 0, lj = indexArray.length; j < lj; j ++ ) indexArray[ j ] = j + groupStart;
+
+						gnode += `<p>${ indexArray.join( ' ' ) }</p>`;
 						gnode += '</triangles>';
 
 					}
