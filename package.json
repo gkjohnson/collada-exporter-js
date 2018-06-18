@@ -33,8 +33,10 @@
     "jszip": "^2.6.0"
   },
   "devDependencies": {
+    "eslint-config-mdcs": "^4.2.3",
     "jszip": "^2.6.0",
     "static-server": "^2.2.0",
     "three": "^0.91.0"
-  }
+  },
+  "dependencies": {}
 }

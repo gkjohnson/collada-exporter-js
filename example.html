@@ -11,51 +11,6 @@
     <title>Collada Exporter Example</title>
 </head>
 <body>
-
-
-    <script type="text/javascript">
-        // https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
-        var saveData = (function () {
-            var a = document.createElement('a');
-            document.body.appendChild(a);
-            a.style = 'display: none';
-            return function (data, fileName) {
-                var blob = new Blob([ data ], { type: 'octet/stream' }),
-                    url = window.URL.createObjectURL(blob);
-                a.href = url;
-                a.download = fileName;
-                a.click();
-                window.URL.revokeObjectURL(url);
-            };
-        }());
-
-        // create the geometry
-        var geometry = new THREE.SphereBufferGeometry( 5, 10, 10 );
-        var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-        var mesh = new THREE.Mesh( geometry, material );
-        var obj = new THREE.Object3D();
-        var loader = new THREE.ColladaLoader();
-        var exp = new THREE.ColladaExporter();
-
-        obj.add(mesh);
-
-
-        // process into the ASCII file format
-        var data = exp.parse(obj);
-        console.log('Format', data);
-
-        // parse it back to geometry and compare
-        var res = loader.parse(data.data);
-
-        const zip = new JSZip();
-        zip.file('example.dae', res.data);
-        data.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
-        zip
-            .generateAsync({ type: 'uint8Array' })
-            // .then( zipdata => saveData(zipdata, 'colladaexample.zip' ) );
-
-        // TODO: Validate the parsed example
-
-    </script>
+    <script type="text/javascript" src="example.js"></script>
 </body>
 </html>
