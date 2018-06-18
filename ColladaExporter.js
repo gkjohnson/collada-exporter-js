@@ -197,6 +197,11 @@ THREE.ColladaExporter.prototype = {
 				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
 				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
 
+				// NOTE: We're not optimizing the attribute arrays here, so they're all the same length and
+				// can therefore share the same triangle indices. However, MeshLab seems to have trouble opening
+				// models with attributes that share an offset.
+				// MeshLab Bug#424: https://sourceforge.net/p/meshlab/bugs/424/
+
 				// serialize normals
 				var triangleInputs = `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
 				if ( 'normal' in processGeom.attributes ) {
@@ -288,7 +293,6 @@ THREE.ColladaExporter.prototype = {
 				}
 
 				imageNode += '</image>';
-
 
 				libraryImages.push( imageNode );
 				imageMap.set( tex.image, texid );
