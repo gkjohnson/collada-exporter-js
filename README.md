@@ -20,18 +20,24 @@ var { data, textures } = exporter.parse(mesh);
 
 ```
 
-#### ColladaExporter.parse(object)
+### ColladaExporter.parse(object, options)
 
 Converts the provided object tree into a collada file and associated textures. Returns on object with the `dae` file data in `data` and the textures in an array with a name in data in `textures`.
 
-#### ColladaArchiveExporter.parse(object, onComplete)
+##### options.version
+
+The Collada file version to export. `1.4.1` and `1.5.0` are the only valid values.
+
+Defaults to `1.4.1`.
+
+### ColladaArchiveExporter.parse(object, onComplete)
 
 Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format to align with the `zae` Collada format. Requires the ColladaExporter and JSZip.
 
 ## Limitations
 
 - Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included.
-- Only `phong` (default), `lambert`, and `constant` material tags are supported.
-- Only diffuse texture maps are support for export.
+- Only `phong` (default), `lambert`, and `constant` material tags are supported ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/4)).
+- Only diffuse texture maps are support for export ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/5)).
 - Only diffuse texture maps cannot be exported with a tint color (per the spec).
-- MeshLab seems to have problems importing textures or mapping the materials ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/3)).
+- MeshLab has problems importing attributes with shared index offsets ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/8)).
