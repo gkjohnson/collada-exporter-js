@@ -425,6 +425,13 @@ THREE.ColladaExporter.prototype = {
 					techniqueNode +
 
 					'</profile_COMMON>' +
+
+					(
+						m.side === THREE.DoubleSide ?
+							`<extra><technique><double_sided side="double_sided" type="int">1</double_sided></technique></extra>` :
+							''
+					) +
+
 					'</effect>';
 
 				libraryMaterials.push( `<material id="${ matid }" name="${ m.name }"><instance_effect url="#${ matid }-effect" /></material>` );
