@@ -36,7 +36,7 @@ THREE.ColladaExporter.prototype = {
 		function format( urdf ) {
 
 			var IS_END_TAG = /^<\//;
-			var IS_SELF_CLOSING = /\/>$/;
+			var IS_SELF_CLOSING = /(\?>$)|(\/>$)/;
 			var HAS_TEXT = /<[^>]+>[^<]*<\/[^<]+>/;
 
 			var pad = ( ch, num ) => ( num > 0 ? ch + pad( ch, num - 1 ) : '' );
@@ -139,6 +139,10 @@ THREE.ColladaExporter.prototype = {
 		// Returns the string for a node's transform information
 		var transMat;
 		function getTransform( o ) {
+
+			// ensure the object's matrix is up to date
+			// before saving the transform
+			o.updateMatrix();
 
 			transMat = transMat || new THREE.Matrix4();
 			transMat.copy( o.matrix );
