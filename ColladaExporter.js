@@ -463,8 +463,6 @@ THREE.ColladaExporter.prototype = {
 
 								`<instance_material symbol="MESH_MATERIAL_${ i }" target="#${ id }" >` +
 
-								// TODO: This isn't needed in all cases. processMaterial could return more information
-								// so this can be properly conditional
 								'<bind_vertex_input semantic="TEXCOORD" input_semantic="TEXCOORD" input_set="0" />' +
 
 								'</instance_material>'
@@ -496,9 +494,10 @@ THREE.ColladaExporter.prototype = {
 		var libraryMaterials = [];
 		var libraryVisualScenes = processObject( object );
 
+		var specLink = version === '1.4.1' ? 'http://www.collada.org/2005/11/COLLADASchema' : 'https://www.khronos.org/collada/';
 		var res =
 			'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
-			`<COLLADA xmlns="https://www.khronos.org/collada/" version="${ version }">` +
+			`<COLLADA xmlns="${ specLink }" version="${ version }">` +
 			'<asset>' +
 			(
 				'<contributor>' +
