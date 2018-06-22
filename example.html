@@ -1,16 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="./node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script src="./node_modules/three/build/three.min.js"></script>
+    <script src="./node_modules/three/examples/js/controls/OrbitControls.js"></script>
     <script src="./node_modules/three/examples/js/loaders/ColladaLoader.js"></script>
     <script src="./node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="./node_modules/threejs-model-loader/ModelLoader.js"></script>
+    <script src="./node_modules/threejs-model-loader/model-viewer-element.js"></script>
 
     <script src="./ColladaExporter.js"></script>
     <script src="./ColladaArchiveExporter.js"></script>
 
     <title>Collada Exporter Example</title>
+    <style>
+		html, body {
+			padding: 0;
+			margin: 0;
+		}
+
+		model-viewer {
+			background: #222;
+			width: 100vw;
+			height: 100vh;
+			display: block;
+		}
+	</style>
 </head>
 <body>
+    <model-viewer></model-viewer>
     <script type="text/javascript" src="example.js"></script>
 </body>
 </html>
