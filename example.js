@@ -70,7 +70,6 @@ loader.load( './testmodels/pump/pump.dae', res => {
 		} );
 
 		el.src = daeurl;
-		setTimeout( () => el._dirty = true, 1000 );
 
 	}, 1000 );
 
