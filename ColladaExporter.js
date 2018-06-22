@@ -356,7 +356,7 @@ THREE.ColladaExporter.prototype = {
 					(
 						m.emissiveMap ?
 							'<texture texture="emissive-sampler" texcoord="TEXCOORD" />' :
-							`<color>${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color>`
+							`<color sid="emission">${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color>`
 					) +
 
 					'</emission>' +
@@ -366,19 +366,19 @@ THREE.ColladaExporter.prototype = {
 					(
 						m.map ?
 							'<texture texture="diffuse-sampler" texcoord="TEXCOORD" />' :
-							`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
+							`<color sid="diffuse">${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
 					) +
 
 					'</diffuse>' +
 
-					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b } 1</color></specular>` +
+					`<specular><color sid="specular">${ specular.r } ${ specular.g } ${ specular.b } 1</color></specular>` +
 
 					'<shininess>' +
 
 					(
 						m.specularMap ?
 							'<texture texture="specular-sampler" texcoord="TEXCOORD" />' :
-							`<float>${ shininess }</float>`
+							`<float sid="shininess">${ shininess }</float>`
 					) +
 
 					'</shininess>' +
@@ -424,13 +424,13 @@ THREE.ColladaExporter.prototype = {
 
 					techniqueNode +
 
-					'</profile_COMMON>' +
-
 					(
 						m.side === THREE.DoubleSide ?
-							`<extra><technique><double_sided side="double_sided" type="int">1</double_sided></technique></extra>` :
+							`<extra><technique><double_sided sid="double_sided" type="int">1</double_sided></technique></extra>` :
 							''
 					) +
+
+					'</profile_COMMON>' +
 
 					'</effect>';
 
