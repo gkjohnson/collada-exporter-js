@@ -341,6 +341,9 @@ THREE.ColladaExporter.prototype = {
 				var shininess = m.shininess || 0;
 				var reflectivity = m.reflectivity || 0;
 
+				// Do not export and alpha map for the reasons mentioned in issue (#13792)
+				// in THREE.js alpha maps are black and white, but collada expects the alpha
+				// channel to specify the transparency
 				var transparencyNode = m.opacity < 1.0 ?
 					'<transparent><float>1</float></transparent>' +
 					`<transparency><float>${ m.opacity }</float></transparency>` :
@@ -348,13 +351,21 @@ THREE.ColladaExporter.prototype = {
 
 				var techniqueNode = `<technique><${ type }>` +
 
-					`<emission><color>${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color></emission>` +
+					'<emission>' +
+
+					(
+						m.emissiveMap ?
+							'<texture texture="emissive-sampler" texcoord="TEXCOORD" />' :
+							`<color>${ emissive.r } ${ emissive.g } ${ emissive.b } 1</color>`
+					) +
+
+					'</emission>' +
 
 					'<diffuse>' +
 
 					(
 						m.map ?
-							`<texture texture="diffuse-sampler" texcoord="TEXCOORD" />` :
+							'<texture texture="diffuse-sampler" texcoord="TEXCOORD" />' :
 							`<color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color>`
 					) +
 
@@ -362,7 +373,15 @@ THREE.ColladaExporter.prototype = {
 
 					`<specular><color>${ specular.r } ${ specular.g } ${ specular.b } 1</color></specular>` +
 
-					`<shininess><float>${ shininess }</float></shininess>` +
+					'<shininess>' +
+
+					(
+						m.specularMap ?
+							'<texture texture="specular-sampler" texcoord="TEXCOORD" />' :
+							`<float>${ shininess }</float>`
+					) +
+
+					'</shininess>' +
 
 					`<reflective><color>${ diffuse.r } ${ diffuse.g } ${ diffuse.b } 1</color></reflective>` +
 
@@ -382,6 +401,24 @@ THREE.ColladaExporter.prototype = {
 							`<init_from>${ processTexture( m.map ) }</init_from>` +
 							'</surface></newparam>' +
 							'<newparam sid="diffuse-sampler"><sampler2D><source>diffuse-surface</source></sampler2D></newparam>' :
+							''
+					) +
+
+					(
+						m.specularMap ?
+							'<newparam sid="specular-surface"><surface type="2D">' +
+							`<init_from>${ processTexture( m.specularMap ) }</init_from>` +
+							'</surface></newparam>' +
+							'<newparam sid="specular-sampler"><sampler2D><source>specular-surface</source></sampler2D></newparam>' :
+							''
+					) +
+
+					(
+						m.emissiveMap ?
+							'<newparam sid="emissive-surface"><surface type="2D">' +
+							`<init_from>${ processTexture( m.emissiveMap ) }</init_from>` +
+							'</surface></newparam>' +
+							'<newparam sid="emissive-sampler"><sampler2D><source>emissive-surface</source></sampler2D></newparam>' :
 							''
 					) +
 
