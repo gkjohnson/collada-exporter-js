@@ -137,30 +137,13 @@ THREE.ColladaExporter.prototype = {
 		}
 
 		// Returns the string for a node's transform information
-		var rotmat;
+		var transMat;
 		function getTransform( o ) {
 
-			var position = o.position;
-			var rotation = o.rotation;
-			var scale = o.scale;
-
-			var xvec = new THREE.Vector3();
-			var yvec = new THREE.Vector3();
-			var zvec = new THREE.Vector3();
-
-			rotmat = rotmat || new THREE.Matrix4();
-			rotmat
-				.makeRotationFromEuler( rotation )
-				.extractBasis( xvec, yvec, zvec );
-
-			var res =
-				`<translate>${ position.x } ${ position.y } ${ position.z }</translate>` +
-				`<rotation>${ xvec.x } ${ xvec.y } ${ xvec.z }</rotation>` +
-				`<rotation>${ yvec.x } ${ yvec.y } ${ yvec.z }</rotation>` +
-				`<rotation>${ zvec.x } ${ zvec.y } ${ zvec.z }</rotation>` +
-				`<scale>${ scale.x } ${ scale.y } ${ scale.z }</scale>`;
-
-			return res;
+			transMat = transMat || new THREE.Matrix4();
+			transMat.copy( o.matrix );
+			transMat.transpose();
+			return `<matrix>${ transMat.toArray().join( ' ' ) }</matrix>`;
 
 		}
 
