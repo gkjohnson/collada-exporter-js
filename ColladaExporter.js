@@ -436,7 +436,7 @@ THREE.ColladaExporter.prototype = {
 
 				libraryMaterials.push( `<material id="${ matid }" name="${ m.name }"><instance_effect url="#${ matid }-effect" /></material>` );
 				libraryEffects.push( effectnode );
-				materialMap.set( m, `${ matid }-effect` );
+				materialMap.set( m, matid );
 
 			}
 
