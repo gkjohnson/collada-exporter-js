@@ -30,6 +30,12 @@ The Collada file version to export. `1.4.1` and `1.5.0` are the only valid value
 
 Defaults to `1.4.1`.
 
+##### options.author
+
+The author to include in the header. Excluded if `null`.
+
+Defaults to `null`.
+
 ### ColladaArchiveExporter.parse(object, onComplete)
 
 Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format to align with the `zae` Collada format. Requires the ColladaExporter and JSZip.

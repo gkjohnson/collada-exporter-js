@@ -19,7 +19,10 @@ THREE.ColladaExporter.prototype = {
 
 	parse: function ( object, options = {} ) {
 
-		options = Object.assign( { version: '1.4.1' }, options );
+		options = Object.assign( {
+			version: '1.4.1',
+			author: null
+		}, options );
 
 		var version = options.version;
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
@@ -510,9 +513,14 @@ THREE.ColladaExporter.prototype = {
 			'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
 			`<COLLADA xmlns="https://www.khronos.org/collada/" version="${ version }">` +
 			'<asset>' +
-			'<contributor><authoring_tool>THREE.js Collada Exporter</authoring_tool></contributor>' +
-			`<created>${ ( new Date() ).toISOString() }</created>` +
-			'<up_axis>Y_UP</up_axis>' +
+			(
+				'<contributor>' +
+				'<authoring_tool>THREE.js Collada Exporter</authoring_tool>' +
+				( options.author !== null ? `<author>${ options.author }</author>` : '' ) +
+				'</contributor>' +
+				`<created>${ ( new Date() ).toISOString() }</created>` +
+				'<up_axis>Y_UP</up_axis>'
+			) +
 			'</asset>';
 
 		res += `<library_images>${ libraryImages.join( '' ) }</library_images>`;
