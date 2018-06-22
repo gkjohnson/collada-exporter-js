@@ -334,12 +334,27 @@ THREE.ColladaExporter.prototype = {
 				// Do not export and alpha map for the reasons mentioned in issue (#13792)
 				// in THREE.js alpha maps are black and white, but collada expects the alpha
 				// channel to specify the transparency
-				var transparencyNode = m.opacity < 1.0 ?
-					'<transparent><float>1</float></transparent>' +
-					`<transparency><float>${ m.opacity }</float></transparency>` :
-					'';
+				var transparencyNode = '';
+				if ( m.transparent === true ) {
 
-				var techniqueNode = `<technique><${ type }>` +
+					transparencyNode +=
+						`<transparent>` +
+						(
+							m.map ?
+								`<texture texture="diffuse-sampler"></texture>` :
+								'<float>1</float>'
+						) +
+						'</transparent>';
+
+					if ( m.opacity < 1 ) {
+
+						transparencyNode += `<transparency><float>${ m.opacity }</float></transparency>`;
+
+					}
+
+				}
+
+				var techniqueNode = `<technique sid="common"><${ type }>` +
 
 					'<emission>' +
 
