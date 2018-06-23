@@ -1,6 +1,6 @@
 {
   "name": "collada-exporter",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Collada / DAE Format exporter for THREE js geometry.",
   "main": "ColladaExporter.js",
   "scripts": {
