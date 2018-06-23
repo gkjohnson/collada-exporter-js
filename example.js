@@ -59,13 +59,12 @@ loader.load( './testmodels/pump/pump.dae', res => {
 		var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
 		el.loadingManager.setURLModifier( url => {
 
-			const tex = Object
-				.keys( data.textures )
-				.filter( n => url.indexOf( data.textures[ n ].name ) !== - 1 )
+			const tex = data.textures
+				.filter( t => url.indexOf( t.name ) !== - 1 )
 				.pop();
 
 			if ( ! tex ) return url;
-			else return URL.createObjectURL( new Blob( [ data.textures[ tex ].data ] ) );
+			else return URL.createObjectURL( new Blob( [ tex.data ] ) );
 
 		} );
 
