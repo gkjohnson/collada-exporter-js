@@ -294,7 +294,8 @@ THREE.ColladaExporter.prototype = {
 				textures.push( {
 					name,
 					ext,
-					data: imageToData( tex.image, ext )
+					data: imageToData( tex.image, ext ),
+					original: tex
 				} );
 
 			}
@@ -460,13 +461,18 @@ THREE.ColladaExporter.prototype = {
 
 				var meshid = processGeometry( o.geometry, meshid );
 
+				// ids of the materials to bind to the geometry
 				var matids = null;
-				if ( o.material != null ) {
 
-					var materials = Array.isArray( o.material ) ? o.material : [ o.material ];
-					matids = materials.map( m => processMaterial( m ) );
+				// get a list of materials to bind to the sub groups of the geometry.
+				// If the amount of subgroups is greater than the materials, than reuse
+				// the materials.
+				var mat = o.material || new THREE.MeshBasicMaterial();
+				var materials = Array.isArray( mat ) ? mat : [ mat ];
+				matids = new Array( o.geometry.groups.length )
+					.fill()
+					.map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
 
-				}
 
 				node +=
 					`<instance_geometry url="#${ meshid }">` +
