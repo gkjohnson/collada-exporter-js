@@ -22,8 +22,16 @@ var { data, textures } = exporter.parse(mesh);
 
 ### ColladaExporter.parse(object, options)
 
-Converts the provided object tree into a collada file and associated textures. Returns on object with the `dae` file data in `data` and the textures in an array with a name in data in `textures`.
-
+Converts the provided object tree into a collada file and associated textures. Returns on object with the `dae` file data in `data` and the textures in an array with a name in data in `textures`. The texture objects are formatted as
+```json
+{
+	"directory": "",
+	"name": "",
+	"ext": "",
+	"data": [],
+	"original": <THREE.Texture>
+}
+```
 ##### options.version
 
 The Collada file version to export. `1.4.1` and `1.5.0` are the only valid values.
@@ -35,6 +43,10 @@ Defaults to `1.4.1`.
 The author to include in the header. Excluded if `null`.
 
 Defaults to `null`.
+
+##### options.textureDirectory
+
+The directory relative to the dae file that the textures will be saved to save the texture files to.
 
 ### ColladaArchiveExporter.parse(object, onComplete)
 
