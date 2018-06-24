@@ -104,18 +104,48 @@ THREE.ColladaExporter.prototype = {
 
 		}
 
+		// gets the attribute array. Generate a new array if the attribute is interleaved
+		var getFuncs = [ 'getX', 'getY', 'getZ', 'getW' ];
+		function attrBufferToArray( attr ) {
+
+			if ( attr.isInterleavedBufferAttribute ) {
+
+				// use the typed array constructor to save on memory
+				var arr = new attr.array.constructor( attr.count * attr.itemSize );
+				var size = attr.itemSize;
+				for ( var i = 0, l = attr.count; i < l; i ++ ) {
+
+					for ( var j = 0; j < size; j ++ ) {
+
+						arr[ i * size + j ] = attr[ getFuncs[ j ] ]( i );
+
+					}
+
+				}
+
+				return arr;
+
+			} else {
+
+				return attr.array;
+
+			}
+
+		}
+
 		// Returns an array of the same type starting at the `st` index,
 		// and `ct` length
 		function subArray( arr, st, ct ) {
 
-			return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, ct );
+			if ( Array.isArray( arr ) ) return arr.slice( st, st + ct );
+			else return new arr.constructor( arr.buffer, st * arr.BYTES_PER_ELEMENT, ct );
 
 		}
 
 		// Returns the string for a geometry's attribute
 		function getAttribute( attr, name, params, type ) {
 
-			var array = attr.array;
+			var array = attrBufferToArray( attr );
 			var res =
 					`<source id="${ name }">` +
 
@@ -171,7 +201,7 @@ THREE.ColladaExporter.prototype = {
 
 				var indexCount =
 					processGeom.index ?
-						processGeom.index.array.length :
+						processGeom.index.count * processGeom.index.itemSize :
 						processGeom.attributes.position.count;
 
 				var groups =
@@ -220,35 +250,28 @@ THREE.ColladaExporter.prototype = {
 
 				}
 
+				var indexArray = null;
+				if ( processGeom.index ) {
+
+					indexArray = attrBufferToArray( processGeom.index );
+
+				} else {
+
+					indexArray = new Array( indexCount );
+					for ( var i = 0, l = indexArray.length; i < l; i ++ ) indexArray[ i ] = i;
+
+				}
+
 				for ( var i = 0, l = groups.length; i < l; i ++ ) {
 
 					var group = groups[ i ];
+					var subarr = subArray( indexArray, group.start, group.count );
+					var polycount = subarr.length / 3;
+					gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
+					gnode += triangleInputs;
 
-					if ( processGeom.index != null ) {
-
-						var subarr = subArray( processGeom.index.array, group.start, group.count );
-						var polycount = subarr.length / 3;
-						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += triangleInputs;
-
-						gnode += `<p>${ subarr.join( ' ' ) }</p>`;
-						gnode += '</triangles>';
-
-					} else {
-
-						var polycount = group.count / 3;
-						gnode += `<triangles material="MESH_MATERIAL_${ group.materialIndex }" count="${ polycount }">`;
-						gnode += triangleInputs;
-
-						// Fill an index array mapping to incrementing triangle indices
-						var indexArray = new Array( group.count );
-						var groupStart = group.start;
-						for ( var j = 0, lj = indexArray.length; j < lj; j ++ ) indexArray[ j ] = j + groupStart;
-
-						gnode += `<p>${ indexArray.join( ' ' ) }</p>`;
-						gnode += '</triangles>';
-
-					}
+					gnode += `<p>${ subarr.join( ' ' ) }</p>`;
+					gnode += '</triangles>';
 
 				}
 
