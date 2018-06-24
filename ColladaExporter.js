@@ -21,8 +21,17 @@ THREE.ColladaExporter.prototype = {
 
 		options = Object.assign( {
 			version: '1.4.1',
-			author: null
+			author: null,
+			textureDirectory: '',
 		}, options );
+
+		if ( options.textureDirectory !== '' ) {
+
+			options.textureDirectory = `${ options.textureDirectory }/`
+				.replace( /\\/g, '/' )
+				.replace( /\/\//g, '/' );
+
+		}
 
 		var version = options.version;
 		if ( version !== '1.4.1' && version !== '1.5.0' ) {
@@ -301,12 +310,12 @@ THREE.ColladaExporter.prototype = {
 
 				if ( version === '1.5.0' ) {
 
-					imageNode += `<init_from><ref>${ name }.${ ext }</ref></init_from>`;
+					imageNode += `<init_from><ref>${ options.textureDirectory }${ name }.${ ext }</ref></init_from>`;
 
 				} else {
 
 					// version image node 1.4.1
-					imageNode += `<init_from>${ name }.${ ext }</init_from>`;
+					imageNode += `<init_from>${ options.textureDirectory }${ name }.${ ext }</init_from>`;
 
 				}
 
@@ -315,6 +324,7 @@ THREE.ColladaExporter.prototype = {
 				libraryImages.push( imageNode );
 				imageMap.set( tex.image, texid );
 				textures.push( {
+					directory: options.textureDirectory,
 					name,
 					ext,
 					data: imageToData( tex.image, ext ),

@@ -55,12 +55,12 @@ loader.load( './testmodels/pump/pump.dae', res => {
 	// wait 1 second to make sure the textures have downloaded
 	setTimeout( () => {
 
-		var data = exp.parse( res.scene );
+		var data = exp.parse( res.scene, { textureDirectory: 'textures/' } );
 		var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
 		el.loadingManager.setURLModifier( url => {
 
 			const tex = data.textures
-				.filter( t => url.indexOf( t.name ) !== - 1 )
+				.filter( t => url.indexOf( `${ t.directory }${ t.name }` ) !== - 1 )
 				.pop();
 
 			if ( ! tex ) return url;
