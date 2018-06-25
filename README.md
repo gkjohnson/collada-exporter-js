@@ -17,28 +17,31 @@ var exporter = new THREE.ColladaExporter();
 var { data, textures } = exporter.parse(mesh);
 
 // save the files!
+const zip = new JSZip();
+zip.file( 'myCollada.dae', data.data );
+data.textures.forEach( tex => zip.file( `${ t.directory }${ tex.name }.${ tex.ext }`, tex.data ) );
 
 ```
 
 ### ColladaExporter.parse(object, options)
 
 Converts the provided object tree into a collada file and associated textures. Returns the following object:
-```json
+```js
 {
 	// Collada file content
-	"data": "",
+	data: "",
 
 	// List of referenced texures
-	"textures": [{
+	textures: [{
 
 		// File directory, name, and extension of the texture data
-		"directory": "",
-		"name": "",
-		"ext": "",
+		directory: "",
+		name: "",
+		ext: "",
 
 		// The texture data and original texture object
-		"data": [],
-		"original": <THREE.Texture>
+		data: [],
+		original: <THREE.Texture>
 	}, ...]
 }
 ```
