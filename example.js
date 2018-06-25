@@ -32,7 +32,7 @@ var parseAndDownload = obj => {
 
 	const zip = new JSZip();
 	zip.file( 'example.dae', data.data );
-	data.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
+	data.textures.forEach( tex => zip.file( `${ t.directory }${ tex.name }.${ tex.ext }`, tex.data ) );
 	// saveData( zip.generate( { type: 'uint8Array' } ), 'colladaexample.zip' );
 
 };
@@ -60,7 +60,7 @@ loader.load( './testmodels/pump/pump.dae', res => {
 		el.loadingManager.setURLModifier( url => {
 
 			const tex = data.textures
-				.filter( t => url.indexOf( `${ t.directory }${ t.name }` ) !== - 1 )
+				.filter( t => url.indexOf( `${ t.directory }${ t.name }.${ t.ext }` ) !== - 1 )
 				.pop();
 
 			if ( ! tex ) return url;
