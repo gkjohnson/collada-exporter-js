@@ -29,7 +29,7 @@ THREE.ColladaExporter.prototype = {
 
 			options.textureDirectory = `${ options.textureDirectory }/`
 				.replace( /\\/g, '/' )
-				.replace( /\/\//g, '/' );
+				.replace( /\/+/g, '/' );
 
 		}
 
