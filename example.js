@@ -23,7 +23,7 @@ var exp = new THREE.ColladaExporter();
 var parseAndDownload = obj => {
 
 	// process into the ASCII file format
-	var data = exp.parse( obj );
+	var data = exp.parse( obj, { textureDirectory: 'textures/' } );
 	console.log( 'Format', data );
 
 	// parse it back to geometry and compare
@@ -32,7 +32,7 @@ var parseAndDownload = obj => {
 
 	const zip = new JSZip();
 	zip.file( 'example.dae', data.data );
-	data.textures.forEach( tex => zip.file( `${ t.directory }${ tex.name }.${ tex.ext }`, tex.data ) );
+	data.textures.forEach( tex => zip.file( `${ tex.directory }${ tex.name }.${ tex.ext }`, tex.data ) );
 	// saveData( zip.generate( { type: 'uint8Array' } ), 'colladaexample.zip' );
 
 };
