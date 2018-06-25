@@ -61,6 +61,8 @@ Defaults to `null`.
 
 The directory relative to the dae file that the textures should be saved to.
 
+Defaults to `''`, or next to the Collada file.
+
 ### ColladaArchiveExporter.parse(object, onComplete)
 
 Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format to align with the `zae` Collada format. Requires the ColladaExporter and JSZip.
