@@ -299,7 +299,7 @@ THREE.ColladaExporter.prototype = {
 		// Returns the image library
 		function processTexture( tex ) {
 
-			var texid = imageMap.get( tex.image );
+			var texid = imageMap.get( tex );
 			if ( texid == null ) {
 
 				texid = `image-${ libraryImages.length + 1 }`;
@@ -322,7 +322,7 @@ THREE.ColladaExporter.prototype = {
 				imageNode += '</image>';
 
 				libraryImages.push( imageNode );
-				imageMap.set( tex.image, texid );
+				imageMap.set( tex, texid );
 				textures.push( {
 					directory: options.textureDirectory,
 					name,
