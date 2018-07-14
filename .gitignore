@@ -57,5 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# folder of test models
 testmodels
+
+# webstorm config file
 .idea
