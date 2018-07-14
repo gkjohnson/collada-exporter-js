@@ -583,7 +583,11 @@ THREE.ColladaExporter.prototype = {
 			textures
 		};
 
-		requestAnimationFrame( () => onDone( res ) );
+		if ( typeof onDone === 'function' ) {
+
+			requestAnimationFrame( () => onDone( res ) );
+
+		}
 
 		return res;
 
