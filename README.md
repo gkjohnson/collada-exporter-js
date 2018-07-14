@@ -69,7 +69,7 @@ Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format 
 
 ## Limitations
 
-- Can only model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/4)).
+- Can only export model geometry, materials, and textures. Animations, skinning, joints, kinematics and other features are not included ([issue](https://github.com/gkjohnson/collada-exporter-js/issues/4)).
 - Only `phong` (default), `lambert`, and `constant` material tags are supported.
 - Only diffuse, specular, and emission maps are supported for export.
 - Diffuse maps cannot be exported with a tint color (per the spec).

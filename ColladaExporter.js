@@ -559,6 +559,7 @@ THREE.ColladaExporter.prototype = {
 				( options.author !== null ? `<author>${ options.author }</author>` : '' ) +
 				'</contributor>' +
 				`<created>${ ( new Date() ).toISOString() }</created>` +
+				`<modified>${ ( new Date() ).toISOString() }</modified>` +
 				'<up_axis>Y_UP</up_axis>'
 			) +
 			'</asset>';
