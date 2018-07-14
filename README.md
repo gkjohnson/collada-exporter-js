@@ -23,7 +23,7 @@ data.textures.forEach( tex => zip.file( `${ t.directory }${ tex.name }.${ tex.ex
 
 ```
 
-### ColladaExporter.parse(object, options)
+### ColladaExporter.parse(object, onDone, options)
 
 Converts the provided object tree into a collada file and associated textures. Returns the following object:
 ```js
@@ -45,6 +45,16 @@ Converts the provided object tree into a collada file and associated textures. R
 	}, ...]
 }
 ```
+
+#### object
+
+The object to export as a Collada file.
+
+#### onDone
+
+An optional callback for when the model has completed being processed. Added to match the `THREE.GLTFExporter` api.
+
+#### options
 ##### options.version
 
 The Collada file version to export. `1.4.1` and `1.5.0` are the only valid values.
@@ -63,7 +73,7 @@ The directory relative to the dae file that the textures should be saved to.
 
 Defaults to `''`, or next to the Collada file.
 
-### ColladaArchiveExporter.parse(object, onComplete)
+### ColladaArchiveExporter.parse(object, onDone, options)
 
 Writes the processed `dae`, `textures`, and `manifest.xml` file to a zip format to align with the `zae` Collada format. Requires the ColladaExporter and JSZip.
 
