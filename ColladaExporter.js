@@ -17,7 +17,7 @@ THREE.ColladaExporter.prototype = {
 
 	constructor: THREE.ColladaExporter,
 
-	parse: function ( object, options = {} ) {
+	parse: function ( object, onDone, options = {} ) {
 
 		options = Object.assign( {
 			version: '1.4.1',
@@ -549,7 +549,7 @@ THREE.ColladaExporter.prototype = {
 		var libraryVisualScenes = processObject( object );
 
 		var specLink = version === '1.4.1' ? 'http://www.collada.org/2005/11/COLLADASchema' : 'https://www.khronos.org/collada/';
-		var res =
+		var dae =
 			'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' +
 			`<COLLADA xmlns="${ specLink }" version="${ version }">` +
 			'<asset>' +
@@ -563,24 +563,28 @@ THREE.ColladaExporter.prototype = {
 			) +
 			'</asset>';
 
-		res += `<library_images>${ libraryImages.join( '' ) }</library_images>`;
+		dae += `<library_images>${ libraryImages.join( '' ) }</library_images>`;
 
-		res += `<library_effects>${ libraryEffects.join( '' ) }</library_effects>`;
+		dae += `<library_effects>${ libraryEffects.join( '' ) }</library_effects>`;
 
-		res += `<library_materials>${ libraryMaterials.join( '' ) }</library_materials>`;
+		dae += `<library_materials>${ libraryMaterials.join( '' ) }</library_materials>`;
 
-		res += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
+		dae += `<library_geometries>${ libraryGeometries.join( '' ) }</library_geometries>`;
 
-		res += `<library_visual_scenes><visual_scene id="Scene" name="scene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
+		dae += `<library_visual_scenes><visual_scene id="Scene" name="scene">${ libraryVisualScenes }</visual_scene></library_visual_scenes>`;
 
-		res += '<scene><instance_visual_scene url="#Scene"/></scene>';
+		dae += '<scene><instance_visual_scene url="#Scene"/></scene>';
 
-		res += '</COLLADA>';
+		dae += '</COLLADA>';
 
-		return {
-			data: format( res ),
+		var res = {
+			data: format( dae ),
 			textures
 		};
+
+		requestAnimationFrame( () => onDone( res ) );
+
+		return res;
 
 	}
 

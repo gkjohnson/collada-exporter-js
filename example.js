@@ -55,20 +55,23 @@ loader.load( './testmodels/pump/pump.dae', res => {
 	// wait 1 second to make sure the textures have downloaded
 	setTimeout( () => {
 
-		var data = exp.parse( res.scene, { textureDirectory: 'textures/' } );
-		var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
-		el.loadingManager.setURLModifier( url => {
+		exp.parse( res.scene, data => {
 
-			const tex = data.textures
-				.filter( t => url.indexOf( `${ t.directory }${ t.name }.${ t.ext }` ) !== - 1 )
-				.pop();
+			var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
+			el.loadingManager.setURLModifier( url => {
 
-			if ( ! tex ) return url;
-			else return URL.createObjectURL( new Blob( [ tex.data ] ) );
+				const tex = data.textures
+					.filter( t => url.indexOf( `${ t.directory }${ t.name }.${ t.ext }` ) !== - 1 )
+					.pop();
 
-		} );
+				if ( ! tex ) return url;
+				else return URL.createObjectURL( new Blob( [ tex.data ] ) );
 
-		el.src = daeurl;
+			} );
+
+			el.src = daeurl;
+
+		}, { textureDirectory: 'textures/' } );
 
 	}, 1000 );
 
