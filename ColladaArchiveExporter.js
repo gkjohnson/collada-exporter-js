@@ -17,7 +17,7 @@ THREE.ColladaArchiveExporter.prototype = {
 
 	constructor: THREE.ColladaArchiveExporter,
 
-	parse: function ( object ) {
+	parse: function ( object, onDone, options ) {
 
 		if ( THREE.ColladaExporter == null ) {
 
@@ -33,7 +33,12 @@ THREE.ColladaArchiveExporter.prototype = {
 
 		}
 
-		var files = ( new THREE.ColladaExporter() ).parse( object, { version: '1.5.0' } );
+		// Force the version to 1.5.0
+		options = Object.assign( {}, options, { version: '1.5.0' } );
+
+		// TODO: we should be able to handle the async and sync versions of
+		// jszip now that we have an onDone function
+		var files = ( new THREE.ColladaExporter() ).parse( object, null, options );
 		var daename = `${ object.name || 'model' }.dae`;
 		var manifest =
 			'<?xml version="1.0" encoding="utf-8"?>' +
@@ -42,9 +47,17 @@ THREE.ColladaArchiveExporter.prototype = {
 		var zip = new JSZip();
 		zip.file( 'manifest.xml', manifest );
 		zip.file( daename, files.data );
-		files.textures.forEach( tex => zip.file( `${ tex.name }.${ tex.ext }`, tex.data ) );
+		files.textures.forEach( tex => zip.file( `${ tex.directory }${ tex.name }.${ tex.ext }`, tex.data ) );
 
-		return zip.generate( { type: 'uint8array' } );
+		var res = zip.generate( { type: 'uint8array' } );
+
+		if ( typeof onDone === 'function' ) {
+
+			requestAnimationFrame( () => onDone( res ) );
+
+		}
+
+		return res;
 
 	}
 
