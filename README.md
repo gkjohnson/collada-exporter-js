@@ -52,7 +52,7 @@ The object to export as a Collada file.
 
 #### onDone
 
-An optional callback for when the model has completed being processed. Added to match the `THREE.GLTFExporter` api.
+An optional callback for when the model has completed being processed. The same data is returned from the function.
 
 #### options
 ##### options.version
