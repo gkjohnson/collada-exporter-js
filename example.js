@@ -50,28 +50,26 @@ var parseAndDownload = obj => {
 customElements.define( 'model-viewer', ModelViewer );
 
 var el = document.querySelector( 'model-viewer' );
-loader.load( './testmodels/pump/pump.dae', res => {
+loader.load( './testmodels/elf/elf.dae', res => {
 
 	// wait 1 second to make sure the textures have downloaded
 	setTimeout( () => {
 
-		exp.parse( res.scene, data => {
 
-			var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
-			el.loadingManager.setURLModifier( url => {
+		var data = exp.parse( res.scene, null, { textureDirectory: 'textures/' } );
+		var daeurl = URL.createObjectURL( new Blob( [ data.data ] ) ) + '#.dae';
+		el.loadingManager.setURLModifier( url => {
 
-				const tex = data.textures
-					.filter( t => url.indexOf( `${ t.directory }${ t.name }.${ t.ext }` ) !== - 1 )
-					.pop();
+			const tex = data.textures
+				.filter( t => url.indexOf( `${ t.directory }${ t.name }.${ t.ext }` ) !== - 1 )
+				.pop();
 
-				if ( ! tex ) return url;
-				else return URL.createObjectURL( new Blob( [ tex.data ] ) );
+			if ( ! tex ) return url;
+			else return URL.createObjectURL( new Blob( [ tex.data ] ) );
 
-			} );
+		} );
 
-			el.src = daeurl;
-
-		}, { textureDirectory: 'textures/' } );
+		el.src = daeurl;
 
 	}, 1000 );
 
