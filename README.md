@@ -4,6 +4,8 @@
 
 Collada / DAE Format exporter for THREE js geometry. The format is described [here](https://www.khronos.org/collada/).
 
+This exporter is included in the THREE.js examples folder [here](https://github.com/mrdoob/three.js/blob/dev/examples/js/exporters/ColladaExporter.js).
+
 ## Use
 
 ```js
