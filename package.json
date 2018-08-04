@@ -41,9 +41,7 @@
     "jszip": "^2.6.0",
     "static-server": "^2.2.0",
     "three": "^0.93.0",
-    "threejs-model-loader": "0.0.5"
-  },
-  "dependencies": {
+    "threejs-model-loader": "0.0.5",
     "@webcomponents/webcomponentsjs": "^2.0.2"
   }
 }
