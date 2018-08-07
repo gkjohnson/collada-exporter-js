@@ -199,23 +199,23 @@ THREE.ColladaExporter.prototype = {
 			if ( ! info ) {
 
 				// convert the geometry to bufferGeometry if it isn't already
-				var processGeom = g;
-				if ( processGeom instanceof THREE.Geometry ) {
+				var bufferGeometry = g;
+				if ( bufferGeometry instanceof THREE.Geometry ) {
 
-					processGeom = ( new THREE.BufferGeometry() ).fromGeometry( processGeom );
+					bufferGeometry = ( new THREE.BufferGeometry() ).fromGeometry( bufferGeometry );
 
 				}
 
 				var meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
 				var indexCount =
-					processGeom.index ?
-						processGeom.index.count * processGeom.index.itemSize :
-						processGeom.attributes.position.count;
+					bufferGeometry.index ?
+						bufferGeometry.index.count * bufferGeometry.index.itemSize :
+						bufferGeometry.attributes.position.count;
 
 				var groups =
-					processGeom.groups != null && processGeom.groups.length !== 0 ?
-						processGeom.groups :
+					bufferGeometry.groups != null && bufferGeometry.groups.length !== 0 ?
+						bufferGeometry.groups :
 						[ { start: 0, count: indexCount, materialIndex: 0 } ];
 
 				var gnode = `<geometry id="${ meshid }" name="${ g.name }"><mesh>`;
@@ -223,7 +223,7 @@ THREE.ColladaExporter.prototype = {
 				// define the geometry node and the vertices for the geometry
 				var posName = `${ meshid }-position`;
 				var vertName = `${ meshid }-vertices`;
-				gnode += getAttribute( processGeom.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
+				gnode += getAttribute( bufferGeometry.attributes.position, posName, [ 'X', 'Y', 'Z' ], 'float' );
 				gnode += `<vertices id="${ vertName }"><input semantic="POSITION" source="#${ posName }" /></vertices>`;
 
 				// NOTE: We're not optimizing the attribute arrays here, so they're all the same length and
@@ -233,36 +233,36 @@ THREE.ColladaExporter.prototype = {
 
 				// serialize normals
 				var triangleInputs = `<input semantic="VERTEX" source="#${ vertName }" offset="0" />`;
-				if ( 'normal' in processGeom.attributes ) {
+				if ( 'normal' in bufferGeometry.attributes ) {
 
 					var normName = `${ meshid }-normal`;
-					gnode += getAttribute( processGeom.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
+					gnode += getAttribute( bufferGeometry.attributes.normal, normName, [ 'X', 'Y', 'Z' ], 'float' );
 					triangleInputs += `<input semantic="NORMAL" source="#${ normName }" offset="0" />`;
 
 				}
 
 				// serialize uvs
-				if ( 'uv' in processGeom.attributes ) {
+				if ( 'uv' in bufferGeometry.attributes ) {
 
 					var uvName = `${ meshid }-texcoord`;
-					gnode += getAttribute( processGeom.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
+					gnode += getAttribute( bufferGeometry.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
 					triangleInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" set="0" />`;
 
 				}
 
 				// serialize colors
-				if ( 'color' in processGeom.attributes ) {
+				if ( 'color' in bufferGeometry.attributes ) {
 
 					var colName = `${ meshid }-color`;
-					gnode += getAttribute( processGeom.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
+					gnode += getAttribute( bufferGeometry.attributes.color, colName, [ 'X', 'Y', 'Z' ], 'uint8' );
 					triangleInputs += `<input semantic="COLOR" source="#${ colName }" offset="0" />`;
 
 				}
 
 				var indexArray = null;
-				if ( processGeom.index ) {
+				if ( bufferGeometry.index ) {
 
-					indexArray = attrBufferToArray( processGeom.index );
+					indexArray = attrBufferToArray( bufferGeometry.index );
 
 				} else {
 
@@ -288,7 +288,7 @@ THREE.ColladaExporter.prototype = {
 
 				libraryGeometries.push( gnode );
 
-				info = { meshid, bufferGeometry: processGeom };
+				info = { meshid: meshid, bufferGeometry: bufferGeometry };
 				geometryInfo.set( g, info );
 
 			}
