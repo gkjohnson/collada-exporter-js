@@ -37,14 +37,16 @@ var parseAndDownload = obj => {
 
 };
 
-// create the geometry
-// var geometry = new THREE.SphereBufferGeometry( 5, 10, 10 );
-// var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-// var mesh = new THREE.Mesh( geometry, material );
-// var obj = new THREE.Object3D();
 
-// obj.add( mesh );
-// parseAndDownload( obj );
+
+
+// test that non-buffer geometry can be exported
+var geometry = new THREE.SphereGeometry( 5, 10, 10 );
+var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+var mesh = new THREE.Mesh( geometry, material );
+exp.parse( mesh );
+
+
 
 // Visualize the processed model
 customElements.define( 'model-viewer', ModelViewer );
