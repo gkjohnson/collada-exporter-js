@@ -194,19 +194,19 @@ THREE.ColladaExporter.prototype = {
 		// Returns the mesh id
 		function processGeometry( g ) {
 
-			var meshid = geometryMap.get( g );
+			var info = geometryInfo.get( g );
 
-			// convert the geometry to bufferGeometry if it isn't already
-			var processGeom = g;
-			if ( processGeom instanceof THREE.Geometry ) {
+			if ( ! info ) {
 
-				processGeom = ( new THREE.BufferGeometry() ).fromGeometry( processGeom );
+				// convert the geometry to bufferGeometry if it isn't already
+				var processGeom = g;
+				if ( processGeom instanceof THREE.Geometry ) {
 
-			}
+					processGeom = ( new THREE.BufferGeometry() ).fromGeometry( processGeom );
 
-			if ( meshid == null ) {
+				}
 
-				meshid = `Mesh${ libraryGeometries.length + 1 }`;
+				var meshid = `Mesh${ libraryGeometries.length + 1 }`;
 
 				var indexCount =
 					processGeom.index ?
@@ -287,11 +287,13 @@ THREE.ColladaExporter.prototype = {
 				gnode += `</mesh></geometry>`;
 
 				libraryGeometries.push( gnode );
-				geometryMap.set( g, meshid );
+
+				info = { meshid, bufferGeometry: processGeom };
+				geometryInfo.set( g, info );
 
 			}
 
-			return meshid;
+			return info;
 
 		}
 
@@ -492,7 +494,11 @@ THREE.ColladaExporter.prototype = {
 
 			if ( o instanceof THREE.Mesh && o.geometry != null ) {
 
-				var meshid = processGeometry( o.geometry, meshid );
+				// function returns the id associated with the mesh and a "BufferGeometry" version
+				// of the geometry in case it's not a geometry.
+				var geomInfo = processGeometry( o.geometry );
+				var meshid = geomInfo.meshid;
+				var geometry = geomInfo.bufferGeometry;
 
 				// ids of the materials to bind to the geometry
 				var matids = null;
@@ -502,7 +508,7 @@ THREE.ColladaExporter.prototype = {
 				// the materials.
 				var mat = o.material || new THREE.MeshBasicMaterial();
 				var materials = Array.isArray( mat ) ? mat : [ mat ];
-				matids = new Array( o.geometry.groups.length )
+				matids = new Array( geometry.groups.length )
 					.fill()
 					.map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
 
@@ -537,7 +543,7 @@ THREE.ColladaExporter.prototype = {
 
 		}
 
-		var geometryMap = new WeakMap();
+		var geometryInfo = new WeakMap();
 		var materialMap = new WeakMap();
 		var imageMap = new WeakMap();
 		var textures = [];
