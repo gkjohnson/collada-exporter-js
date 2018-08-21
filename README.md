@@ -1,6 +1,7 @@
 # collada-exporter-js
 
-[![npm version](https://badge.fury.io/js/collada-exporter.svg)](https://www.npmjs.com/package/collada-exporter)
+[![npm version](https://img.shields.io/npm/v/collada-exporter.svg?style=flat-square)](https://www.npmjs.com/package/collada-exporter)
+[![lgtm code quality](https://img.shields.io/lgtm/grade/javascript/g/gkjohnson/collada-exporter-js.svg?style=flat-square&label=code-quality)](https://lgtm.com/projects/g/gkjohnson/collada-exporter-js/)
 
 Collada / DAE Format exporter for THREE js geometry. The format is described [here](https://www.khronos.org/collada/).
 
