@@ -1,6 +1,6 @@
 # This package is deprecated
 
-This exporter is included and updated as a part of the (THREE js project)[https://threejs.org/docs/#examples/exporters/ColladaExporter] and is no longer maintained in this repository.
+This exporter is included and updated as a part of the [THREE js project](https://threejs.org/docs/#examples/exporters/ColladaExporter) and is no longer maintained in this repository.
 
 # collada-exporter-js
 
