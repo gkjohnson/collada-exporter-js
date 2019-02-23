@@ -1,3 +1,7 @@
+# This package is deprecated
+
+This exporter is included and updated as a part of the (THREE js project)[https://threejs.org/docs/#examples/exporters/ColladaExporter] and is no longer maintained in this repository.
+
 # collada-exporter-js
 
 [![npm version](https://img.shields.io/npm/v/collada-exporter.svg?style=flat-square)](https://www.npmjs.com/package/collada-exporter)
