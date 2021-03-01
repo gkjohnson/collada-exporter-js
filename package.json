@@ -41,7 +41,7 @@
     "eslint-config-mdcs": "^4.2.3",
     "jszip": "^2.6.0",
     "static-server": "^2.2.0",
-    "three": "^0.93.0",
+    "three": "^0.125.0",
     "threejs-model-loader": "0.0.7"
   }
 }
